@@ -1,17 +1,21 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using HomeBudget.Models;
 
 namespace HomeBudget
 {
     public partial class DashboardPage : Page
     {
-        private readonly Gospodarstwo _gospodarstwo;
+        private readonly DashboardViewModel _viewModel;
 
         public DashboardPage(Gospodarstwo gospodarstwo)
         {
             InitializeComponent();
-            _gospodarstwo = gospodarstwo;
-            NazwaGospodarstwaText.Text = gospodarstwo.Nazwa;
+            _viewModel = new DashboardViewModel(gospodarstwo, () =>
+            {
+                NavigationService?.Navigate(new ListaGospodarstwPage());
+            });
+            DataContext = _viewModel;
 
             Loaded += (s, e) =>
             {
@@ -20,9 +24,10 @@ namespace HomeBudget
             };
         }
 
-        private void WylaczAplikacje_Click(object sender, RoutedEventArgs e)
+        private void CategoryVisibilityCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            BazaDanych.Zapisz();
+            _viewModel.RefreshDashboard();
         }
     }
 }

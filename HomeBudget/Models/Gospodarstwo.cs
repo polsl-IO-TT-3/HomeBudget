@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using HomeBudget.Models;
 
 namespace HomeBudget
 {
@@ -21,6 +22,8 @@ namespace HomeBudget
 
     public class Gospodarstwo : INotifyPropertyChanged
     {
+        public List<KategoriaBudzetu> Kategorie { get; set; } = new();
+        public List<Transakcja> Transakcje { get; set; } = new();
         private string _nazwa = string.Empty;
         public string Nazwa
         {
@@ -148,11 +151,7 @@ namespace HomeBudget
                 }
             }
 
-            return new ObservableCollection<Gospodarstwo>
-            {
-                new Gospodarstwo { Nazwa = "Gospodarstwo 1", HasloHash = HasloHelper.Hash("1234") },
-                new Gospodarstwo { Nazwa = "Gospodarstwo 2", HasloHash = HasloHelper.Hash("1234") }
-            };
+            return new ObservableCollection<Gospodarstwo>();
         }
 
         public static void Zapisz()

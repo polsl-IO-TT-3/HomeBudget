@@ -1,29 +1,493 @@
 ﻿<Page x:Class="HomeBudget.DashboardPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:components="clr-namespace:HomeBudget.Components"
       Title="Dashboard"
       Background="#F8FAFC">
-    <Grid Margin="40">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock x:Name="NazwaGospodarstwaText"
-                       FontSize="22"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"
-                       Foreground="#1E293B"
-                       Margin="0,0,0,8"/>
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Page.Resources>
 
-            <TextBlock Text="Panel główny (Dashboard)"
-                       FontSize="14"
-                       HorizontalAlignment="Center"
-                       Foreground="#64748B"
-                       Margin="0,0,0,28"/>
+    <DockPanel Margin="16,12,16,8">
+        <!-- Górny pasek nawigacji -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Gospodarstwo: " Foreground="#64748B" FontSize="13"/>
+                <TextBlock Text="{Binding LoggedInWorkspace.Nazwa}" FontWeight="Bold" Foreground="#1E293B" FontSize="13"/>
+            </StackPanel>
 
-            <Button Content="Wyłącz aplikację"
-        Click="WylaczAplikacje_Click"
-        Width="180"
-        Height="38"
-        Style="{StaticResource DangerButtonStyle}"
-        ToolTip="Zamknij program"/>
-        </StackPanel>
-    </Grid>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Eksportuj JSON"
+                        Command="{Binding ExportBackupCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Height="30"
+                        Margin="0,0,8,0"
+                        ToolTip="Zapisz kopię zapasową gospodarstwa do pliku JSON"/>
+                <Button Content="Zmień gospodarstwo / Wyloguj"
+                        Command="{Binding LogoutCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Height="30"
+                        ToolTip="Wróć do wyboru gospodarstwa"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Osobne, zamykane paski przypomnień dla każdej opłaty cyklicznej -->
+        <ItemsControl DockPanel.Dock="Top"
+                      ItemsSource="{Binding Reminders}"
+                      Margin="0,0,0,6">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Background="#FEF3C7"
+                            BorderBrush="#F59E0B"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="10,5"
+                            Margin="0,0,0,6">
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right"
+                                    Content="✕"
+                                    Command="{Binding DataContext.DismissReminderCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                    CommandParameter="{Binding}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Foreground="#92400E"
+                                    FontWeight="Bold"
+                                    FontSize="12"
+                                    Padding="6,0"
+                                    Cursor="Hand"
+                                    ToolTip="Zamknij powiadomienie (pojawi się ponownie po restarcie programu)"/>
+                            <TextBlock Text="{Binding Message}"
+                                       Foreground="#92400E"
+                                       FontWeight="SemiBold"
+                                       FontSize="12.5"
+                                       VerticalAlignment="Center"
+                                       TextWrapping="Wrap"/>
+                        </DockPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Dolny pasek statusu -->
+        <StatusBar DockPanel.Dock="Bottom" Background="Transparent" Margin="0,6,0,0">
+            <StatusBarItem Content="{Binding StatusMessage}" Foreground="#64748B" FontSize="11.5"/>
+        </StatusBar>
+
+        <TabControl Background="White" BorderBrush="#CBD5E1">
+            <!-- ======================================================== -->
+            <!-- PANEL 1: PODGLĄD MIESIĄCA                                -->
+            <!-- ======================================================== -->
+            <TabItem Header="  Panel podglądu  " FontSize="13" FontWeight="SemiBold">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="14">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- WIERSZ 1: MIESIĄC (STAŁA SZEROKOŚĆ) + 3 KAFELKI KPI -->
+                        <Grid Grid.Row="0" Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Button Command="{Binding PreviousMonthCommand}"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Width="34" Height="34" Padding="0" Margin="0,0,8,0"
+                                            ToolTip="Poprzedni miesiąc">
+                                        <Path Data="M 6,0 L 0,6 L 6,12"
+                                              Stroke="#1E293B"
+                                              StrokeThickness="2.2"
+                                              StrokeStartLineCap="Round"
+                                              StrokeEndLineCap="Round"
+                                              StrokeLineJoin="Round"/>
+                                    </Button>
+
+                                    <TextBlock Text="{Binding SelectedMonthTitle}"
+                                               Width="200"
+                                               TextAlignment="Center"
+                                               FontFamily="Georgia"
+                                               FontSize="22"
+                                               FontStyle="Italic"
+                                               FontWeight="SemiBold"
+                                               Foreground="#1E293B"
+                                               VerticalAlignment="Center"/>
+
+                                    <Button Command="{Binding NextMonthCommand}"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Width="34" Height="34" Padding="0" Margin="8,0,0,0"
+                                            ToolTip="Następny miesiąc">
+                                        <Path Data="M 0,0 L 6,6 L 0,12"
+                                              Stroke="#1E293B"
+                                              StrokeThickness="2.2"
+                                              StrokeStartLineCap="Round"
+                                              StrokeEndLineCap="Round"
+                                              StrokeLineJoin="Round"/>
+                                    </Button>
+                                </StackPanel>
+                                <TextBlock Text="miesięczny budżet" FontFamily="Georgia" FontStyle="Italic" FontSize="12" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                <TextBlock Text="{Binding PeriodRangeText}" FontSize="11" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+
+                            <components:KpiCard Grid.Column="1" Title="AKTUALNY PRZYCHÓD" ValueText="{Binding TotalIncomeText}" Margin="6,0"/>
+                            <components:KpiCard Grid.Column="2" Title="AKTUALNE WYDATKI" ValueText="{Binding TotalExpensesText}" Margin="6,0"/>
+                            <components:KpiCard Grid.Column="3" Title="POZOSTAŁO W BUDŻECIE" ValueText="{Binding RemainingBudgetText}" ValueBrush="#15803D" Margin="6,0,0,0"/>
+                        </Grid>
+
+                        <!-- WIERSZ 2: PRZYCHÓD | OPŁATY STAŁE | WYKRES KOŁOWY -->
+                        <Grid Grid.Row="1" Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.15*"/>
+                                <ColumnDefinition Width="1.25*"/>
+                                <ColumnDefinition Width="1.1*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <components:DashboardSectionCard Grid.Column="0"
+                                                             Title="PRZYCHÓD"
+                                                             HeaderBackground="#1D9A8E"
+                                                             TotalText="{Binding TotalIncomeText}"
+                                                             Margin="0,0,10,0">
+                                <DataGrid ItemsSource="{Binding MonthlyIncomes}" AutoGenerateColumns="False" IsReadOnly="True"
+                                          CanUserAddRows="False" CanUserDeleteRows="False"
+                                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0"
+                                          Background="White" RowHeight="28" Height="215">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="DATA" Binding="{Binding Date, StringFormat=dd.MM}" Width="60"/>
+                                        <DataGridTextColumn Header="NAZWA" Binding="{Binding Title}" Width="*"/>
+                                        <DataGridTextColumn Header="KWOTA" Binding="{Binding Amount, StringFormat={}{0:N2} zł}" Width="95"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </components:DashboardSectionCard>
+
+                            <components:DashboardSectionCard Grid.Column="1"
+                                                             Title="OPŁATY STAŁE / CYKLICZNE"
+                                                             HeaderBackground="#8FD3C7"
+                                                             HeaderForeground="#1E293B"
+                                                             TotalText="{Binding RecurringTotalText}"
+                                                             Margin="5,0">
+                                <DataGrid ItemsSource="{Binding RecurringExpenses}" AutoGenerateColumns="False"
+                                          CanUserAddRows="False" CanUserDeleteRows="False"
+                                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0"
+                                          Background="White" RowHeight="28" Height="215">
+                                    <DataGrid.Columns>
+                                        <DataGridCheckBoxColumn Header="OPŁ." Binding="{Binding IsPaid, UpdateSourceTrigger=PropertyChanged}" Width="45"/>
+                                        <DataGridTextColumn Header="DATA" Binding="{Binding Date, StringFormat=dd.MM}" Width="60" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="NAZWA" Binding="{Binding Title}" Width="*" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="KWOTA" Binding="{Binding Amount, StringFormat={}{0:N2} zł}" Width="95" IsReadOnly="True"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </components:DashboardSectionCard>
+
+                            <components:DashboardSectionCard Grid.Column="2"
+                                                             Title="WYDATKI VS. BUDŻET"
+                                                             HeaderBackground="#D8CEF0"
+                                                             HeaderForeground="#3B2F63"
+                                                             Margin="10,0,0,0">
+                                <components:DonutChartControl SpentRatio="{Binding SpentRatio}" Margin="8"/>
+                            </components:DashboardSectionCard>
+                        </Grid>
+
+                        <!-- WIERSZ 3: LIMITY I WYDATKI W KATEGORIACH | WSZYSTKIE WYDATKI -->
+                        <Grid Grid.Row="2" Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.5*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <components:DashboardSectionCard Grid.Column="0"
+                                                             Title="LIMITY I WYDATKI W KATEGORIACH"
+                                                             HeaderBackground="#F49AB8"
+                                                             Margin="0,0,10,0">
+                                <DataGrid ItemsSource="{Binding CategorySummaries}" AutoGenerateColumns="False" IsReadOnly="True"
+                                          CanUserAddRows="False" CanUserDeleteRows="False"
+                                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0"
+                                          Background="White" RowHeight="28" MaxHeight="220">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="KATEGORIA" Binding="{Binding CategoryName}" Width="*"/>
+                                        <DataGridTextColumn Header="PLANOWANY LIMIT" Binding="{Binding PlannedLimitText}" Width="140"/>
+                                        <DataGridTextColumn Header="RZECZYWISTE WYDATKI" Binding="{Binding ActualSpentText}" Width="150"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </components:DashboardSectionCard>
+
+                            <components:DashboardSectionCard Grid.Column="1"
+                                                             Title="WSZYSTKIE WYDATKI [PODSUMOWANIE]"
+                                                             HeaderBackground="#BBA8EB"
+                                                             Margin="6,0,0,0">
+                                <DataGrid ItemsSource="{Binding CategorySummaries}" AutoGenerateColumns="False" IsReadOnly="True"
+                                          CanUserAddRows="False" CanUserDeleteRows="False"
+                                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0"
+                                          Background="White" RowHeight="28" MaxHeight="220">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="KATEGORIA" Binding="{Binding CategoryName}" Width="*"/>
+                                        <DataGridTextColumn Header="KWOTA" Binding="{Binding ActualSpentText}" Width="105"/>
+                                        <DataGridTextColumn Header="%" Binding="{Binding SharePercentText}" Width="55"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </components:DashboardSectionCard>
+                        </Grid>
+
+                        <!-- WIERSZ 4: OSOBNE KAFELKI WYBRANYCH KATEGORII -->
+                        <StackPanel Grid.Row="3" Visibility="{Binding HasCategoryCards, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="WYBRANE KATEGORIE — OSOBNE KAFELKI"
+                                       FontSize="12" FontWeight="Bold" Foreground="#475569" Margin="2,0,0,8"/>
+                            <ItemsControl ItemsSource="{Binding CategoryCards}" Margin="-6,0">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="3"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <components:DashboardSectionCard Title="{Binding HeaderTitle}"
+                                             HeaderBackground="{Binding HeaderColor}"
+                                             HeaderForeground="#1E293B"
+                                             TotalText="{Binding TotalAmountText}"
+                                             Margin="6,0,6,14">
+                                            <DataGrid ItemsSource="{Binding Transactions}" AutoGenerateColumns="False" IsReadOnly="True"
+                                                  CanUserAddRows="False" CanUserDeleteRows="False"
+                                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0"
+                                                  Background="White" RowHeight="27" Height="185">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="DATA" Binding="{Binding Date, StringFormat=dd.MM}" Width="55"/>
+                                                    <DataGridTextColumn Header="NAZWA" Binding="{Binding Title}" Width="*"/>
+                                                    <DataGridTextColumn Header="TYP" Binding="{Binding TypeLabel}" Width="68"/>
+                                                    <DataGridTextColumn Header="KWOTA" Binding="{Binding Amount, StringFormat={}{0:N2} zł}" Width="88"/>
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </components:DashboardSectionCard>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ======================================================== -->
+            <!-- PANEL 2: TRANSAKCJE I KATEGORIE                          -->
+            <!-- ======================================================== -->
+            <TabItem Header="  Transakcje i Kategorie  " FontSize="13" FontWeight="SemiBold">
+                <Grid Margin="14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.45*"/>
+                        <ColumnDefinition Width="14"/>
+                        <ColumnDefinition Width="1.35*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Lewa kolumna: Lista transakcji -->
+                    <components:DashboardSectionCard Grid.Column="0"
+                                                     Title="TRANSAKCJE W WYBRANYM MIESIĄCU"
+                                                     HeaderBackground="#BBA8EB">
+                        <DockPanel>
+                            <Border DockPanel.Dock="Bottom" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0,1,0,0" Padding="10,6">
+                                <Button Content="Usuń zaznaczoną"
+                                        Command="{Binding DeleteTransactionCommand}"
+                                        Style="{StaticResource DangerButtonStyle}"
+                                        HorizontalAlignment="Right"
+                                        Height="28"
+                                        FontSize="11.5"
+                                        ToolTip="Usuń wybraną transakcję z listy"/>
+                            </Border>
+
+                            <DataGrid ItemsSource="{Binding MonthlyTransactions}" SelectedItem="{Binding SelectedTransaction}"
+                                      AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                                      CanUserAddRows="False" CanUserDeleteRows="False"
+                                      HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0"
+                                      Background="White" RowHeight="30">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="DATA" Binding="{Binding Date, StringFormat=dd.MM.yyyy}" Width="95"/>
+                                    <DataGridTextColumn Header="KATEGORIA" Binding="{Binding CategoryName}" Width="135"/>
+                                    <DataGridTextColumn Header="OPIS / TYTUŁ" Binding="{Binding Title}" Width="*"/>
+                                    <DataGridTextColumn Header="TYP" Binding="{Binding TypeLabel}" Width="78"/>
+                                    <DataGridTextColumn Header="KWOTA" Binding="{Binding Amount, StringFormat={}{0:N2} zł}" Width="100"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </components:DashboardSectionCard>
+
+                    <!-- Prawa kolumna: Formularze -->
+                    <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <!-- KOMUNIKAT BŁĘDU WALIDACJI -->
+                            <Border Background="#FEE2E2"
+                                    BorderBrush="#DC2626"
+                                    BorderThickness="1.2"
+                                    CornerRadius="6"
+                                    Padding="12,8"
+                                    Margin="0,0,0,12"
+                                    Visibility="{Binding HasFormError, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="⚠"
+                                               Foreground="#DC2626"
+                                               FontSize="15"
+                                               FontWeight="Bold"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,0"/>
+                                    <TextBlock Text="{Binding FormErrorMessage}"
+                                               Foreground="#991B1B"
+                                               FontSize="12.5"
+                                               FontWeight="SemiBold"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 1. DODAJ NOWĄ TRANSAKCJĘ -->
+                            <components:DashboardSectionCard Title="DODAJ NOWĄ TRANSAKCJĘ"
+                                                             HeaderBackground="#BBA8EB"
+                                                             Margin="0,0,0,12">
+                                <StackPanel Margin="14,10">
+                                    <TextBlock Text="Kategoria:" FontSize="12" Foreground="#475569"/>
+                                    <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" DisplayMemberPath="Name" Height="28" Margin="0,3,0,8"/>
+
+                                    <TextBlock Text="Opis / tytuł:" FontSize="12" Foreground="#475569"/>
+                                    <TextBox Text="{Binding NewTitle, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Padding="6,0" Margin="0,3,0,8"/>
+
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="12"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="Kwota (zł):" FontSize="12" Foreground="#475569"/>
+                                            <TextBox Text="{Binding NewAmountText, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Padding="6,0" Margin="0,3,0,0"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="Data transakcji:" FontSize="12" Foreground="#475569"/>
+                                            <DatePicker SelectedDate="{Binding NewDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Margin="0,3,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,2,0,8">
+                                        <RadioButton GroupName="TransactionTypeGroup" Content="Wydatek" IsChecked="{Binding IsExpense}" Margin="0,0,18,0"/>
+                                        <RadioButton GroupName="TransactionTypeGroup" Content="Przychód"/>
+                                    </StackPanel>
+
+                                    <CheckBox Content="Transakcja cykliczna (powtarzaj od daty transakcji)"
+                                              IsChecked="{Binding IsRecurring}"
+                                              Margin="0,0,0,8"/>
+
+                                    <!-- Wybór częstotliwości (widoczny po zaznaczeniu transakcji cyklicznej) -->
+                                    <StackPanel Visibility="{Binding IsRecurring, Converter={StaticResource BoolToVis}}"
+                                                Margin="0,0,0,10">
+                                        <TextBlock Text="Częstotliwość powtarzania:" FontSize="12" Foreground="#475569"/>
+                                        <ComboBox ItemsSource="{Binding RecurrenceOptions}"
+                                                  SelectedItem="{Binding SelectedRecurrenceOption}"
+                                                  DisplayMemberPath="Label"
+                                                  Height="28"
+                                                  Margin="0,3,0,0"/>
+                                    </StackPanel>
+
+                                    <Button Content="Dodaj transakcję"
+                                            Command="{Binding AddTransactionCommand}"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            ToolTip="Zapisz nową transakcję"/>
+                                </StackPanel>
+                            </components:DashboardSectionCard>
+
+                            <!-- 2. USTAW LIMIT KATEGORII -->
+                            <components:DashboardSectionCard Title="USTAW LIMIT KATEGORII"
+                                                             HeaderBackground="#8FD3C7"
+                                                             HeaderForeground="#1E293B"
+                                                             Margin="0,0,0,12">
+                                <StackPanel Margin="14,10">
+                                    <TextBlock Text="Kategoria:" FontSize="12" Foreground="#475569"/>
+                                    <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedLimitCategory}" DisplayMemberPath="Name" Height="28" Margin="0,3,0,8"/>
+
+                                    <TextBlock Text="Miesięczny limit (zł):" FontSize="12" Foreground="#475569"/>
+                                    <DockPanel Margin="0,3,0,0">
+                                        <Button DockPanel.Dock="Right"
+                                                Content="Zapisz limit"
+                                                Command="{Binding SetLimitCommand}"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                Width="105"
+                                                Height="28"
+                                                Margin="8,0,0,0"
+                                                ToolTip="Zapisz miesięczny limit wydatków"/>
+                                        <TextBox Text="{Binding NewLimitAmountText, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Padding="6,0"/>
+                                    </DockPanel>
+                                </StackPanel>
+                            </components:DashboardSectionCard>
+
+                            <!-- 3. UTWÓRZ NOWĄ KATEGORIĘ -->
+                            <components:DashboardSectionCard Title="UTWÓRZ NOWĄ KATEGORIĘ"
+                                                             HeaderBackground="#F49AB8"
+                                                             Margin="0,0,0,12">
+                                <StackPanel Margin="14,10">
+                                    <TextBlock Text="Nazwa kategorii:" FontSize="12" Foreground="#475569"/>
+                                    <DockPanel Margin="0,3,0,0">
+                                        <Button DockPanel.Dock="Right"
+                                                Content="Utwórz kategorię"
+                                                Command="{Binding AddCategoryCommand}"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                Width="130"
+                                                Height="28"
+                                                Margin="8,0,0,0"
+                                                ToolTip="Dodaj nową kategorię budżetową"/>
+                                        <TextBox Text="{Binding NewCategoryName, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Padding="6,0"/>
+                                    </DockPanel>
+                                </StackPanel>
+                            </components:DashboardSectionCard>
+
+                            <!-- 4. WIDOCZNOŚĆ KATEGORII NA PANELU PODGLĄDU -->
+                            <components:DashboardSectionCard Title="WYŚWIETLANIE KATEGORII NA PANELU PODGLĄDU"
+                                                             HeaderBackground="#D8CEF0"
+                                                             HeaderForeground="#3B2F63">
+                                <StackPanel Margin="14,10">
+                                    <Grid Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="125"/>
+                                            <ColumnDefinition Width="105"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Kategoria" FontSize="11.5" FontWeight="Bold" Foreground="#475569"/>
+                                        <TextBlock Grid.Column="1" Text="Limity i podsum." FontSize="11.5" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center"/>
+                                        <TextBlock Grid.Column="2" Text="Osobny kafelek" FontSize="11.5" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center"/>
+                                    </Grid>
+
+                                    <Separator Margin="0,0,0,6"/>
+
+                                    <ItemsControl ItemsSource="{Binding Categories}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,3">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="125"/>
+                                                        <ColumnDefinition Width="105"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="12.5" Foreground="#1E293B" VerticalAlignment="Center"/>
+                                                    <CheckBox Grid.Column="1"
+                                                              IsChecked="{Binding IsVisibleInSummary, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                              Click="CategoryVisibilityCheckBox_Click"
+                                                              HorizontalAlignment="Center"
+                                                              VerticalAlignment="Center"/>
+                                                    <CheckBox Grid.Column="2"
+                                                              IsChecked="{Binding ShowAsSeparateCard, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                              Click="CategoryVisibilityCheckBox_Click"
+                                                              HorizontalAlignment="Center"
+                                                              VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </components:DashboardSectionCard>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
 </Page>

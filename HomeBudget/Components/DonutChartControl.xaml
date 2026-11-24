@@ -1,0 +1,45 @@
+﻿<UserControl x:Class="HomeBudget.Components.DonutChartControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             MinHeight="200">
+    <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Width="156" Height="156" Grid.Row="0">
+            <!-- Pierścień tła (pozostały budżet) -->
+            <Ellipse Stroke="#E2E8F0" StrokeThickness="20"/>
+
+            <!-- Łuk wydatków -->
+            <Path x:Name="SpentArc"
+                  Stroke="#7C5CBF"
+                  StrokeThickness="20"
+                  StrokeStartLineCap="Round"
+                  StrokeEndLineCap="Round"/>
+
+            <!-- Tekst w środku -->
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock x:Name="PercentText"
+                           Text="0%"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           Foreground="#1E293B"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="budżetu"
+                           FontSize="11.5"
+                           Foreground="#64748B"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Legenda -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
+            <Ellipse Width="10" Height="10" Fill="#7C5CBF" Margin="0,0,5,0"/>
+            <TextBlock Text="Wydatki" FontSize="11.5" Foreground="#475569" Margin="0,0,14,0"/>
+            <Ellipse Width="10" Height="10" Fill="#E2E8F0" Margin="0,0,5,0"/>
+            <TextBlock Text="Pozostało" FontSize="11.5" Foreground="#475569"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
