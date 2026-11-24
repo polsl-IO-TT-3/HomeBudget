@@ -1,0 +1,144 @@
+﻿<UserControl x:Class="HomeBudget.Components.GospodarstwoCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <!-- Styl kafelka gospodarstwa -->
+        <Style x:Key="WorkspaceCardButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#1E293B"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Height" Value="68"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="CardBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="14,8">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CardBorder" Property="Background" Value="#EFF6FF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="CardBorder" Property="Background" Value="#DBEAFE"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Styl małych przycisków akcji (edycja / usuwanie) -->
+        <Style x:Key="ActionIconButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#94A3B8"/>
+            <Setter Property="BorderThickness" Value="1.2"/>
+            <Setter Property="Foreground" Value="#334155"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="68"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ActionBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ActionBorder" Property="Background" Value="#F1F5F9"/>
+                                <Setter TargetName="ActionBorder" Property="BorderBrush" Value="#475569"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ActionBorder" Property="Background" Value="#E2E8F0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="0,0,0,14">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Kafelek gospodarstwa -->
+        <Button Grid.Column="0"
+        Style="{StaticResource WorkspaceCardButtonStyle}"
+        Click="Otworz_Click"
+        ToolTip="Otwórz gospodarstwo">
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Kółko / awatar -->
+                <Border Width="44" Height="44"
+                        CornerRadius="22"
+                        BorderBrush="#1E293B"
+                        BorderThickness="1.5"
+                        Background="#F8FAFC"
+                        Margin="0,0,16,0">
+                    <TextBlock Text="{Binding Inicjal}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontWeight="SemiBold"
+                               FontSize="15"
+                               Foreground="#1E293B"/>
+                </Border>
+
+                <TextBlock Grid.Column="1"
+                           Text="{Binding Nazwa}"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Foreground="#0F172A"
+                           TextTrimming="CharacterEllipsis"/>
+
+                <TextBlock Grid.Column="2"
+                           Text="🔒"
+                           VerticalAlignment="Center"
+                           FontSize="13"
+                           Foreground="#64748B"
+                           Margin="8,0,0,0"
+                           Visibility="{Binding CzyChronione, Converter={StaticResource BoolToVis}}"/>
+            </Grid>
+        </Button>
+
+        <!-- Przycisk edycji -->
+        <Button Grid.Column="1"
+                Style="{StaticResource ActionIconButtonStyle}"
+                Content="✎"
+                FontSize="16"
+                Margin="8,0,0,0"
+                ToolTip="Przejdź do edytycji nazwy lub zmiany hasła"
+                Click="Edytuj_Click"/>
+
+        <!-- Przycisk usuwania -->
+        <Button Grid.Column="2"
+                Style="{StaticResource ActionIconButtonStyle}"
+                Content="✕"
+                FontSize="14"
+                Foreground="#DC2626"
+                Margin="6,0,0,0"
+                ToolTip="Przejdź do potwierdzenia usunięcia gospodarstwa"
+                Click="Usun_Click"/>
+    </Grid>
+</UserControl>

@@ -1,0 +1,95 @@
+﻿<Page x:Class="HomeBudget.EdycjaGospodarstwaPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Edycja gospodarstwa"
+      Background="#F8FAFC">
+    <Grid Margin="40">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0"
+                    Width="360"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+            <TextBlock Text="Nazwa gospodarstwa"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       Foreground="#1E293B"
+                       Margin="0,0,0,6"/>
+            <TextBox x:Name="NowaNazwaBox"
+                     Height="34"
+                     VerticalContentAlignment="Center"
+                     Padding="8,0"
+                     BorderBrush="#1E293B"
+                     BorderThickness="1.3"
+                     ToolTip="Wpisz nową nazwę gospodarstwa"
+                     Margin="0,0,0,16"/>
+
+            <!-- Potwierdzenie obecnym hasłem (ukryte, jeśli gospodarstwo nie ma hasła) -->
+            <StackPanel x:Name="StareHasloPanel" Margin="0,0,0,16">
+                <TextBlock Text="Obecne hasło (wymagane do zapisania zmian)"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           Foreground="#1E293B"
+                           Margin="0,0,0,6"/>
+                <PasswordBox x:Name="StareHasloBox"
+                             Height="34"
+                             VerticalContentAlignment="Center"
+                             Padding="8,0"
+                             BorderBrush="#1E293B"
+                             ToolTip="Wpisz obecne hasło"
+                             BorderThickness="1.3"/>
+            </StackPanel>
+
+            <!-- Rozwijana sekcja zmiany hasła -->
+            <Expander x:Name="ZmianaHaslaExpander"
+                      Header="Zmień hasło"
+                      FontSize="14"
+                      FontWeight="SemiBold"
+                      Foreground="#1E293B"
+                      Margin="0,0,0,10"
+                      ToolTip="Rozwiń sekcję zmiany hasła"
+                      Cursor="Hand">
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="Nowe hasło"
+                               FontSize="12.5"
+                               FontWeight="Normal"
+                               Foreground="#64748B"
+                               Margin="0,0,0,4"/>
+                    <PasswordBox x:Name="NoweHasloBox"
+                                 Height="34"
+                                 VerticalContentAlignment="Center"
+                                 Padding="8,0"
+                                 BorderBrush="#1E293B"
+                                 ToolTip="Wpisz nowe hasło"
+                                 BorderThickness="1.3"/>
+                </StackPanel>
+            </Expander>
+
+            <TextBlock x:Name="ErrorText"
+                       Foreground="#DC2626"
+                       FontSize="12.5"
+                       TextWrapping="Wrap"
+                       MinHeight="20"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Button Content="Wróć"
+        Width="100"
+        HorizontalAlignment="Left"
+        Click="Cofnij_Click"
+        Style="{StaticResource SecondaryButtonStyle}"
+        ToolTip="Anuluj i wróć do listy gospodarstw"/>
+
+            <Button Content="Zapisz"
+        Width="110"
+        HorizontalAlignment="Right"
+        IsDefault="True"
+        Click="Zapisz_Click"
+        Style="{StaticResource PrimaryButtonStyle}"
+        ToolTip="Zapisz zmiany w gospodarstwie"/>
+        </Grid>
+    </Grid>
+</Page>
