@@ -5,6 +5,7 @@
         Height="500" Width="760"
         MinHeight="420" MinWidth="560"
         WindowStartupLocation="CenterScreen"
+        Icon="/Assets/hb.ico"
         Background="#F8FAFC">
     <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
 </Window>
