@@ -1,0 +1,33 @@
+<UserControl x:Class="HomeBudget.Controls.DonutChartControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             MinHeight="200" MinWidth="200">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Viewbox Grid.Row="0" MaxHeight="190" MaxWidth="190" Margin="6">
+            <Grid Width="200" Height="200">
+                <!-- Tło pierścienia (Pozostało w budżecie - pastelowy miętowy) -->
+                <Ellipse Width="180" Height="180" Stroke="#CDEBD9" StrokeThickness="36"/>
+                <!-- Wycinek wydatków (pastelowy fiolet) -->
+                <Path x:Name="SpentArcPath" Stroke="#A78BFA" StrokeThickness="36" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat"/>
+                <!-- Procent w środku -->
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock x:Name="CenterPercentText" Text="0%" FontSize="24" FontWeight="Bold" Foreground="#334155" HorizontalAlignment="Center"/>
+                    <TextBlock Text="wydano" FontSize="11" Foreground="#64748B" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Viewbox>
+
+        <!-- Legenda jak na wzorze -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,4">
+            <Ellipse Width="10" Height="10" Fill="#CDEBD9" Margin="0,0,6,0" VerticalAlignment="Center"/>
+            <TextBlock Text="Pozostało w budżecie" FontSize="11.5" Foreground="#475569" Margin="0,0,14,0"/>
+            <Ellipse Width="10" Height="10" Fill="#A78BFA" Margin="0,0,6,0" VerticalAlignment="Center"/>
+            <TextBlock Text="Wydane" FontSize="11.5" Foreground="#475569"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

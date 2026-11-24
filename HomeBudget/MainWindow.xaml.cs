@@ -1,24 +1,63 @@
-﻿using System.Text;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using HomeBudget.Models;
+using HomeBudget.ViewModels;
+using HomeBudget.Views;
 
-namespace HomeBudget
+namespace HomeBudget;
+
+public partial class MainWindow : Window
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    private readonly MainViewModel _viewModel;
+
+    public MainWindow(MainViewModel viewModel)
     {
-        public MainWindow()
+        InitializeComponent();
+        _viewModel = viewModel;
+        DataContext = _viewModel;
+    }
+
+    private void WorkspaceCard_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: Workspace workspace })
+            return;
+
+        if (!workspace.IsProtected)
         {
-            InitializeComponent();
+            _viewModel.CompleteLogin(workspace);
+            return;
         }
+
+        var popup = new LoginPopupWindow(
+            workspace.Name,
+            enteredPassword => _viewModel.VerifyWorkspacePassword(workspace, enteredPassword))
+        {
+            Owner = this
+        };
+
+        if (popup.ShowDialog() == true)
+        {
+            _viewModel.CompleteLogin(workspace);
+        }
+    }
+
+    private void CreateWorkspaceButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel.TryCreateWorkspace(NewWorkspacePasswordInput.Password))
+        {
+            NewWorkspacePasswordInput.Clear();
+        }
+    }
+
+    private void CancelCreateButton_Click(object sender, RoutedEventArgs e)
+    {
+        NewWorkspacePasswordInput.Clear();
+    }
+
+    private void Window_Closing(object? sender, CancelEventArgs e)
+    {
+        // Automatyczna kopia zapasowa przy zamknięciu aplikacji (zgodnie ze specyfikacją)
+        _viewModel.PerformAutomaticExitBackup();
     }
 }

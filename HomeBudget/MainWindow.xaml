@@ -1,12 +1,481 @@
-﻿<Window x:Class="HomeBudget.MainWindow"
+<Window x:Class="HomeBudget.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:HomeBudget"
+        xmlns:controls="clr-namespace:HomeBudget.Controls"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="{Binding WindowTitle}"
+        Height="740" Width="1180"
+        MinHeight="620" MinWidth="960"
+        WindowStartupLocation="CenterScreen"
+        Background="#F7F8FC"
+        Closing="Window_Closing">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
+        <!-- Styl kafelka gospodarstwa -->
+        <Style x:Key="WorkspaceCardButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#1E293B"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Height" Value="68"/>
+            <Setter Property="Margin" Value="0,0,0,14"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="CardBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="14,8">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CardBorder" Property="Background" Value="#EFF6FF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="CardBorder" Property="Background" Value="#DBEAFE"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Styl przycisku "+ Dodaj gospodarstwo" -->
+        <Style x:Key="AddWorkspaceButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#94A3B8"/>
+            <Setter Property="BorderThickness" Value="1.2"/>
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="AddBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="14,6">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="AddBorder" Property="Background" Value="#F1F5F9"/>
+                                <Setter TargetName="AddBorder" Property="BorderBrush" Value="#475569"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Styl karty dashboardu -->
+        <Style x:Key="DashboardCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <!-- ================================================================ -->
+        <!-- WIDOK 1: WYBÓR GOSPODARSTWA + DODAJ GOSPODARSTWO                 -->
+        <!-- ================================================================ -->
+        <Grid Visibility="{Binding IsSelectionVisible, Converter={StaticResource BoolToVis}}" Margin="40">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Width="360" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <ItemsControl ItemsSource="{Binding Workspaces}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource WorkspaceCardButtonStyle}"
+                                        Click="WorkspaceCard_Click"
+                                        Tag="{Binding}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Width="44" Height="44" CornerRadius="22" BorderBrush="#1E293B" BorderThickness="1.5" Background="#F8FAFC" Margin="0,0,16,0">
+                                            <TextBlock Text="{Binding Initials}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="15" Foreground="#1E293B"/>
+                                        </Border>
+
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" FontSize="16" Foreground="#0F172A"/>
+
+                                        <TextBlock Grid.Column="2" Text="🔒" VerticalAlignment="Center" FontSize="13" Foreground="#64748B"
+                                                   Visibility="{Binding IsProtected, Converter={StaticResource BoolToVis}}"/>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Button Style="{StaticResource AddWorkspaceButtonStyle}" Command="{Binding ShowCreateWorkspaceCommand}">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="+" FontSize="24" FontWeight="Light" VerticalAlignment="Center" Margin="6,-3,16,0" Foreground="#1E293B"/>
+                            <TextBlock Text="Dodaj gospodarstwo" FontSize="15" VerticalAlignment="Center" Foreground="#334155"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </ScrollViewer>
+
+            <TextBlock Grid.Row="1"
+                       Text="Dane testowe: hasło do Gospodarstwo 1 oraz Gospodarstwo 2 to 1234"
+                       HorizontalAlignment="Center" FontSize="11.5" Foreground="#64748B" Margin="0,14,0,0"/>
+        </Grid>
+
+        <!-- ================================================================ -->
+        <!-- WIDOK 2: TWORZENIE GOSPODARSTWA (NA TEJ SAMEJ STRONIE)           -->
+        <!-- ================================================================ -->
+        <Grid Visibility="{Binding IsCreateVisible, Converter={StaticResource BoolToVis}}" Margin="40">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Width="360" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="Nazwa gospodarstwa" FontSize="14" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,0,0,6"/>
+                <TextBox x:Name="NewWorkspaceNameInput"
+                         Text="{Binding NewWorkspaceName, UpdateSourceTrigger=PropertyChanged}"
+                         Height="34" VerticalContentAlignment="Center" Padding="8,0"
+                         BorderBrush="#1E293B" BorderThickness="1.3" Margin="0,0,0,18"/>
+
+                <TextBlock Text="Hasło (opcjonalne)" FontSize="14" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,0,0,6"/>
+                <PasswordBox x:Name="NewWorkspacePasswordInput"
+                             Height="34" VerticalContentAlignment="Center" Padding="8,0"
+                             BorderBrush="#1E293B" BorderThickness="1.3" Margin="0,0,0,10"/>
+
+                <TextBlock Text="{Binding CreateErrorMessage}" Foreground="#DC2626" FontSize="12.5" TextWrapping="Wrap" MinHeight="20"/>
+            </StackPanel>
+
+            <Grid Grid.Row="1">
+                <Button Content="Wróć" Width="100" Height="34" HorizontalAlignment="Left"
+                        Command="{Binding CancelCreateWorkspaceCommand}" Click="CancelCreateButton_Click"
+                        Background="White" BorderBrush="#64748B" BorderThickness="1.2"/>
+
+                <Button Content="Stwórz" Width="110" Height="34" HorizontalAlignment="Right"
+                        Click="CreateWorkspaceButton_Click"
+                        Background="White" BorderBrush="#1E293B" BorderThickness="1.4" FontWeight="SemiBold"/>
+            </Grid>
+        </Grid>
+
+        <!-- ================================================================ -->
+        <!-- WIDOK 3: DASHBOARD (W STYLU PRZESŁANYCH ZDJĘĆ)                   -->
+        <!-- ================================================================ -->
+        <DockPanel Visibility="{Binding IsDashboardVisible, Converter={StaticResource BoolToVis}}" Margin="16,12,16,8">
+            <!-- Górny pasek nawigacji aplikacji -->
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Gospodarstwo: " Foreground="#64748B" FontSize="13"/>
+                    <TextBlock Text="{Binding LoggedInWorkspace.Name}" FontWeight="Bold" Foreground="#1E293B" FontSize="13"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Eksportuj JSON" Command="{Binding ExportBackupCommand}" Padding="12,5" Margin="0,0,8,0" Background="White" BorderBrush="#94A3B8"/>
+                    <Button Content="Zmień gospodarstwo / Wyloguj" Command="{Binding LogoutCommand}" Padding="12,5" Background="White" BorderBrush="#94A3B8"/>
+                </StackPanel>
+            </DockPanel>
+
+            <!-- Baner przypomnień o nadchodzących opłatach cyklicznych -->
+            <Border DockPanel.Dock="Top"
+                    Background="#FEF3C7" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="4"
+                    Padding="10,6" Margin="0,0,0,10"
+                    Visibility="{Binding HasReminders, Converter={StaticResource BoolToVis}}">
+                <TextBlock Text="{Binding ReminderBanner}" Foreground="#92400E" FontWeight="SemiBold" FontSize="12.5"/>
+            </Border>
+
+            <!-- Dolny pasek statusu -->
+            <StatusBar DockPanel.Dock="Bottom" Background="Transparent" Margin="0,6,0,0">
+                <StatusBarItem Content="{Binding StatusMessage}" Foreground="#64748B" FontSize="11.5"/>
+            </StatusBar>
+
+            <!-- Zakładki: 1) Przegląd miesiąca (jak zdjęcie 1 i 3), 2) Transakcje i Kategorie (jak zdjęcie 2) -->
+            <TabControl Background="White" BorderBrush="#CBD5E1">
+                <!-- ======================================================== -->
+                <!-- ZAKŁADKA 1: PRZEGLĄD MIESIĄCA (DASHBOARD)                -->
+                <!-- ======================================================== -->
+                <TabItem Header="  Przegląd miesiąca  " FontSize="13" FontWeight="SemiBold">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="14">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- WIERSZ 1: MIESIĄC + 3 KAFELKI KPI (jak na górze wzoru) -->
+                            <Grid Grid.Row="0" Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.2*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Nagłówek miesiąca z wyborem okresu -->
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Button Content="◀" Command="{Binding PreviousMonthCommand}" Width="26" Height="26" Background="White" BorderBrush="#CBD5E1" Margin="0,0,8,0"/>
+                                        <TextBlock Text="{Binding SelectedMonthTitle}" FontFamily="Georgia" FontSize="22" FontStyle="Italic" FontWeight="SemiBold" Foreground="#1E293B" VerticalAlignment="Center"/>
+                                        <Button Content="▶" Command="{Binding NextMonthCommand}" Width="26" Height="26" Background="White" BorderBrush="#CBD5E1" Margin="8,0,0,0"/>
+                                    </StackPanel>
+                                    <TextBlock Text="miesięczny budżet" FontFamily="Georgia" FontStyle="Italic" FontSize="12" Foreground="#64748B" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                    <TextBlock Text="{Binding PeriodRangeText}" FontSize="11" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                </StackPanel>
+
+                                <!-- KPI 1: AKTUALNY PRZYCHÓD -->
+                                <Border Grid.Column="1" Style="{StaticResource DashboardCardStyle}" Margin="6,0">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Top" Background="#D8CEF0" Padding="8,6">
+                                            <TextBlock Text="AKTUALNY PRZYCHÓD" FontSize="11.5" FontWeight="Bold" Foreground="#3B2F63" HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding TotalIncomeText}" FontSize="20" FontWeight="SemiBold" Foreground="#1E293B" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,14"/>
+                                    </DockPanel>
+                                </Border>
+
+                                <!-- KPI 2: AKTUALNE WYDATKI -->
+                                <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}" Margin="6,0">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Top" Background="#D8CEF0" Padding="8,6">
+                                            <TextBlock Text="AKTUALNE WYDATKI" FontSize="11.5" FontWeight="Bold" Foreground="#3B2F63" HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding TotalExpensesText}" FontSize="20" FontWeight="SemiBold" Foreground="#1E293B" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,14"/>
+                                    </DockPanel>
+                                </Border>
+
+                                <!-- KPI 3: POZOSTAŁO W BUDŻECIE -->
+                                <Border Grid.Column="3" Style="{StaticResource DashboardCardStyle}" Margin="6,0,0,0">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Top" Background="#D8CEF0" Padding="8,6">
+                                            <TextBlock Text="POZOSTAŁO W BUDŻECIE" FontSize="11.5" FontWeight="Bold" Foreground="#3B2F63" HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding RemainingBudgetText}" FontSize="20" FontWeight="SemiBold" Foreground="#15803D" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,14"/>
+                                    </DockPanel>
+                                </Border>
+                            </Grid>
+
+                            <!-- WIERSZ 2: PRZYCHÓD | OPŁATY STAŁE | WYDATKI VS. BUDŻET (DONUT) -->
+                            <Grid Grid.Row="1" Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.15*"/>
+                                    <ColumnDefinition Width="1.25*"/>
+                                    <ColumnDefinition Width="1.1*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Karta: PRZYCHÓD (turkusowy nagłówek) -->
+                                <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}" Margin="0,0,10,0">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Top" Background="#1D9A8E" Padding="8,7">
+                                            <TextBlock Text="PRZYCHÓD" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <Border DockPanel.Dock="Bottom" Background="#E2E8F0" Padding="10,6">
+                                            <DockPanel>
+                                                <TextBlock Text="SUMA" FontWeight="Bold" FontSize="11.5" Foreground="#1E293B"/>
+                                                <TextBlock Text="{Binding TotalIncomeText}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right" Foreground="#1E293B"/>
+                                            </DockPanel>
+                                        </Border>
+                                        <DataGrid ItemsSource="{Binding MonthlyIncomes}" AutoGenerateColumns="False" IsReadOnly="True"
+                                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0"
+                                                  Background="White" RowHeight="28" Height="215">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="DATA" Binding="{Binding Date, StringFormat=dd.MM}" Width="60"/>
+                                                <DataGridTextColumn Header="NAZWA" Binding="{Binding Title}" Width="*"/>
+                                                <DataGridTextColumn Header="KWOTA" Binding="{Binding Amount, StringFormat={}{0:N2} zł}" Width="95"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </DockPanel>
+                                </Border>
+
+                                <!-- Karta: OPŁATY STAŁE / SUBSKRYPCJE (miętowy nagłówek jak na zdjęciu 3) -->
+                                <Border Grid.Column="1" Style="{StaticResource DashboardCardStyle}" Margin="5,0">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Top" Background="#8FD3C7" Padding="8,7">
+                                            <TextBlock Text="OPŁATY STAŁE / CYKLICZNE" FontSize="12" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <Border DockPanel.Dock="Bottom" Background="#E2E8F0" Padding="10,6">
+                                            <DockPanel>
+                                                <TextBlock Text="SUMA" FontWeight="Bold" FontSize="11.5" Foreground="#1E293B"/>
+                                                <TextBlock Text="{Binding RecurringTotalText}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right" Foreground="#1E293B"/>
+                                            </DockPanel>
+                                        </Border>
+                                        <DataGrid ItemsSource="{Binding RecurringExpenses}" AutoGenerateColumns="False"
+                                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0"
+                                                  Background="White" RowHeight="28" Height="215">
+                                            <DataGrid.Columns>
+                                                <DataGridCheckBoxColumn Header="OPŁ." Binding="{Binding IsPaid, UpdateSourceTrigger=PropertyChanged}" Width="45"/>
+                                                <DataGridTextColumn Header="DZIEŃ" Binding="{Binding BillingDayText}" Width="55" IsReadOnly="True"/>
+                                                <DataGridTextColumn Header="NAZWA" Binding="{Binding Title}" Width="*" IsReadOnly="True"/>
+                                                <DataGridTextColumn Header="KWOTA" Binding="{Binding Amount, StringFormat={}{0:N2} zł}" Width="95" IsReadOnly="True"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </DockPanel>
+                                </Border>
+
+                                <!-- Karta: WYDATKI VS. BUDŻET (wykres kołowy / donut) -->
+                                <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}" Margin="10,0,0,0">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Top" Background="#D8CEF0" Padding="8,7">
+                                            <TextBlock Text="WYDATKI VS. BUDŻET" FontSize="12" FontWeight="Bold" Foreground="#3B2F63" HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <controls:DonutChartControl SpentRatio="{Binding SpentRatio}" Margin="8"/>
+                                    </DockPanel>
+                                </Border>
+                            </Grid>
+
+                            <!-- WIERSZ 3: WYDATKI W KATEGORIACH + SZYBKIE USTAWIANIE LIMITU -->
+                            <Grid Grid.Row="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}" Margin="0,0,10,0">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Top" Background="#F49AB8" Padding="8,7">
+                                            <TextBlock Text="LIMITY I WYDATKI W KATEGORIACH" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <DataGrid ItemsSource="{Binding CategorySummaries}" AutoGenerateColumns="False" IsReadOnly="True"
+                                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0"
+                                                  Background="White" RowHeight="28" MaxHeight="200">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="KATEGORIA" Binding="{Binding CategoryName}" Width="*"/>
+                                                <DataGridTextColumn Header="PLANOWANY LIMIT" Binding="{Binding PlannedLimitText}" Width="140"/>
+                                                <DataGridTextColumn Header="RZECZYWISTE WYDATKI" Binding="{Binding ActualSpentText}" Width="150"/>
+                                                <DataGridTextColumn Header="UDZIAŁ %" Binding="{Binding SharePercentText}" Width="85"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </DockPanel>
+                                </Border>
+
+                                <!-- Panel ustawiania limitu -->
+                                <Border Grid.Column="1" Style="{StaticResource DashboardCardStyle}" Margin="6,0,0,0">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Top" Background="#8FD3C7" Padding="8,7">
+                                            <TextBlock Text="USTAW LIMIT KATEGORII" FontSize="12" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Margin="14,12">
+                                            <TextBlock Text="Kategoria:" FontSize="12" Foreground="#475569" Margin="0,0,0,4"/>
+                                            <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedLimitCategory}" DisplayMemberPath="Name" Height="28" Margin="0,0,0,10"/>
+
+                                            <TextBlock Text="Miesięczny limit (zł):" FontSize="12" Foreground="#475569" Margin="0,0,0,4"/>
+                                            <TextBox Text="{Binding NewLimitAmountText, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Padding="6,0" Margin="0,0,0,12"/>
+
+                                            <Button Content="Zapisz limit" Command="{Binding SetLimitCommand}" Height="30" Background="#1D9A8E" Foreground="White" FontWeight="SemiBold" BorderThickness="0"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ======================================================== -->
+                <!-- ZAKŁADKA 2: TRANSAKCJE I KATEGORIE (JAK ZDJĘCIE 2)       -->
+                <!-- ======================================================== -->
+                <TabItem Header="  Transakcje i Kategorie  " FontSize="13" FontWeight="SemiBold">
+                    <Grid Margin="14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.85*"/>
+                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition Width="1.15*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Lewa strona: WYDATKI / PRZYCHODY TRANSAKCJE -->
+                        <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}">
+                            <DockPanel>
+                                <Border DockPanel.Dock="Top" Background="#BBA8EB" Padding="10,8">
+                                    <DockPanel>
+                                        <TextBlock Text="TRANSAKCJE W WYBRANYM MIESIĄCU" FontSize="12.5" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                        <Button Content="Usuń zaznaczoną" Command="{Binding DeleteTransactionCommand}" HorizontalAlignment="Right" Padding="10,3" Background="White" Foreground="#3B2F63" FontSize="11.5" BorderThickness="0"/>
+                                    </DockPanel>
+                                </Border>
+
+                                <DataGrid ItemsSource="{Binding MonthlyTransactions}" SelectedItem="{Binding SelectedTransaction}"
+                                          AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single"
+                                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0"
+                                          Background="White" RowHeight="30">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="DATA" Binding="{Binding Date, StringFormat=dd.MM.yyyy}" Width="95"/>
+                                        <DataGridTextColumn Header="KATEGORIA" Binding="{Binding CategoryName}" Width="140"/>
+                                        <DataGridTextColumn Header="OPIS / TYTUŁ" Binding="{Binding Title}" Width="*"/>
+                                        <DataGridTextColumn Header="TYP" Binding="{Binding TypeLabel}" Width="80"/>
+                                        <DataGridTextColumn Header="KWOTA" Binding="{Binding Amount, StringFormat={}{0:N2} zł}" Width="105"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Prawa strona: Dodawanie transakcji + Podsumowanie kategorii -->
+                        <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <!-- Formularz dodawania transakcji -->
+                                <Border Style="{StaticResource DashboardCardStyle}" Margin="0,0,0,14">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Top" Background="#BBA8EB" Padding="8,7">
+                                            <TextBlock Text="DODAJ NOWĄ TRANSAKCJĘ" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Margin="14,12">
+                                            <TextBlock Text="Kategoria:" FontSize="12" Foreground="#475569"/>
+                                            <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" DisplayMemberPath="Name" Height="28" Margin="0,3,0,8"/>
+
+                                            <TextBlock Text="Opis / tytuł:" FontSize="12" Foreground="#475569"/>
+                                            <TextBox Text="{Binding NewTitle, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Padding="6,0" Margin="0,3,0,8"/>
+
+                                            <TextBlock Text="Kwota (zł):" FontSize="12" Foreground="#475569"/>
+                                            <TextBox Text="{Binding NewAmountText, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Padding="6,0" Margin="0,3,0,8"/>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,2,0,8">
+                                                <RadioButton Content="Wydatek" IsChecked="{Binding IsExpense}" Margin="0,0,18,0"/>
+                                                <RadioButton Content="Przychód"/>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                                <CheckBox Content="Opłata stała / cykliczna (dzień):" IsChecked="{Binding IsRecurring}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                <TextBox Text="{Binding BillingDayText}" Width="42" IsEnabled="{Binding IsRecurring}" VerticalContentAlignment="Center" Padding="4,0"/>
+                                            </StackPanel>
+
+                                            <Button Content="Dodaj transakcję" Command="{Binding AddTransactionCommand}" Height="32" Background="#7C5CBF" Foreground="White" FontWeight="SemiBold" BorderThickness="0"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+
+                                <!-- WSZYSTKIE WYDATKI [PODSUMOWANIE] (jak prawy dolny róg na zdjęciu 2) -->
+                                <Border Style="{StaticResource DashboardCardStyle}">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Top" Background="#BBA8EB" Padding="8,7">
+                                            <TextBlock Text="WSZYSTKIE WYDATKI [PODSUMOWANIE]" FontSize="11.5" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <DataGrid ItemsSource="{Binding CategorySummaries}" AutoGenerateColumns="False" IsReadOnly="True"
+                                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0"
+                                                  Background="White" RowHeight="26">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="KATEGORIA" Binding="{Binding CategoryName}" Width="*"/>
+                                                <DataGridTextColumn Header="KWOTA" Binding="{Binding ActualSpentText}" Width="95"/>
+                                                <DataGridTextColumn Header="%" Binding="{Binding SharePercentText}" Width="50"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </DockPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </DockPanel>
     </Grid>
 </Window>
