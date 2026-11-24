@@ -1,0 +1,23 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.sln.docstates
+
+# Kompilacja .NET i tymczasowe projekty WPF
+[Bb]in/
+[Oo]bj/
+*_wpftmp.csproj
+TestResults/
+artifacts/
+
+# Lokalne bazy SQLite i ich pliki pomocnicze
+*.db
+*.sqlite
+*.sqlite3
+*.db-*
+*.sqlite-*
+*.sqlite3-*
+
+# Lokalne kopie zapasowe budżetu
+[Bb]ackups/
