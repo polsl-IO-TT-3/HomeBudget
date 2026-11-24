@@ -20,13 +20,12 @@ namespace HomeBudget
             else
             {
                 HasloPanel.Visibility = Visibility.Collapsed;
-                Height = 190;
             }
         }
 
         private void Usun_Click(object sender, RoutedEventArgs e)
         {
-            if (HasloHelper.Hash(HasloBox.Password) == _gospodarstwo.Haslo)
+            if (_gospodarstwo.CzyChronione && !_gospodarstwo.SprawdzHaslo(HasloBox.Password))
             {
                 ErrorText.Text = "Nieprawidłowe hasło. Gospodarstwo nie zostało usunięte.";
                 HasloBox.Clear();

@@ -18,7 +18,7 @@ namespace HomeBudget
 
         private void Loguj_Click(object sender, RoutedEventArgs e)
         {
-            if (HasloHelper.Hash(HasloBox.Password) == _gospodarstwo.Haslo)
+            if (_gospodarstwo.SprawdzHaslo(HasloBox.Password))
             {
                 DialogResult = true;
                 Close();

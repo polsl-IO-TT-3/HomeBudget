@@ -43,9 +43,14 @@ namespace HomeBudget
                 ErrorText.Text = "Nazwa gospodarstwa nie może być pusta.";
                 return;
             }
+            if (BazaDanych.CzyNazwaIstnieje(nowaNazwa, _gospodarstwo))
+            {
+                ErrorText.Text = "Gospodarstwo o takiej nazwie już istnieje.";
+                return;
+            }
 
             // Każda zmiana wymaga zatwierdzenia obecnym hasłem (jeśli gospodarstwo jest chronione)
-            if (_gospodarstwo.CzyChronione && StareHasloBox.Password != _gospodarstwo.Haslo)
+            if (_gospodarstwo.CzyChronione && !_gospodarstwo.SprawdzHaslo(StareHasloBox.Password))
             {
                 ErrorText.Text = "Wpisz poprawne obecne hasło, aby zatwierdzić zmiany.";
                 StareHasloBox.Clear();
@@ -54,9 +59,9 @@ namespace HomeBudget
             }
 
             // Jeśli sekcja zmiany hasła została rozwinięta i wpisano nowe hasło
-            if (ZmianaHaslaExpander.IsExpanded && !string.IsNullOrEmpty(NoweHasloBox.Password))
+            if (_gospodarstwo.CzyChronione && !_gospodarstwo.SprawdzHaslo(StareHasloBox.Password))
             {
-                _gospodarstwo.Haslo = HasloHelper.Hash(NoweHasloBox.Password);
+                _gospodarstwo.UstawHaslo(NoweHasloBox.Password);
             }
 
             _gospodarstwo.Nazwa = nowaNazwa;

@@ -1,23 +1,24 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-
 namespace HomeBudget
 {
- 
-    public class HasloHelper
+    public static class HasloHelper
     {
         public static string Hash(string tekst) =>
             string.IsNullOrEmpty(tekst)
                 ? string.Empty
                 : Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(tekst)));
     }
+
     public class Gospodarstwo : INotifyPropertyChanged
     {
         private string _nazwa = string.Empty;
@@ -28,39 +29,41 @@ namespace HomeBudget
             {
                 _nazwa = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Nazwa)));
+            }
+        }
+
+        private string _inicjal = "?";
+        [JsonIgnore]
+        public string Inicjal
+        {
+            get => _inicjal;
+            set
+            {
+                if (_inicjal == value) return;
+                _inicjal = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Inicjal)));
             }
         }
 
-        [JsonIgnore]
-        public string Inicjal
+        private string _hasloHash = string.Empty;
+        public string HasloHash
         {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(Nazwa)) return "?";
-                var czesci = Nazwa.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (czesci.Length >= 2)
-                {
-                    return $"{char.ToUpper(czesci[0][0])}{char.ToUpper(czesci[1][0])}";
-                }
-                return char.ToUpper(czesci[0][0]).ToString();
-            }
-        }
-
-        private string _haslo = string.Empty;
-        public string Haslo
-        {
-            get => _haslo;
+            get => _hasloHash;
             set
             {
-                _haslo = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Haslo)));
+                _hasloHash = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasloHash)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CzyChronione)));
             }
         }
 
         [JsonIgnore]
-        public bool CzyChronione => !string.IsNullOrEmpty(Haslo);
+        public bool CzyChronione => !string.IsNullOrEmpty(HasloHash);
+
+        public void UstawHaslo(string noweHaslo) => HasloHash = HasloHelper.Hash(noweHaslo);
+
+        public bool SprawdzHaslo(string wpisaneHaslo) =>
+            string.IsNullOrEmpty(HasloHash) || HasloHelper.Hash(wpisaneHaslo) == HasloHash;
 
         public event PropertyChangedEventHandler? PropertyChanged;
     }
@@ -73,6 +76,61 @@ namespace HomeBudget
             "gospodarstwa.json");
 
         public static ObservableCollection<Gospodarstwo> Gospodarstwa { get; } = Wczytaj();
+
+        static BazaDanych()
+        {
+            OdswiezInicjaly();
+        }
+
+        public static bool CzyNazwaIstnieje(string nazwa, Gospodarstwo? pomijane = null)
+        {
+            return Gospodarstwa.Any(g =>
+                g != pomijane &&
+                string.Equals(g.Nazwa.Trim(), nazwa.Trim(), StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static void OdswiezInicjaly()
+        {
+            var uzyte = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var g in Gospodarstwa)
+            {
+                string nazwa = g.Nazwa?.Trim() ?? string.Empty;
+                if (string.IsNullOrEmpty(nazwa))
+                {
+                    g.Inicjal = "?";
+                    continue;
+                }
+
+                var czesci = nazwa.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                // 1. Bazowy inicjał (1 litera dla jednego słowa, 2 litery dla wielu słów)
+                string kandydat = czesci.Length >= 2
+                    ? $"{char.ToUpper(czesci[0][0])}{char.ToUpper(czesci[1][0])}"
+                    : char.ToUpper(czesci[0][0]).ToString();
+
+                // 2. Jeśli zajęty i pierwsze słowo ma min. 2 litery -> weź dwie pierwsze litery (np. S -> SY)
+                if (uzyte.Contains(kandydat) && czesci[0].Length >= 2)
+                {
+                    kandydat = $"{char.ToUpper(czesci[0][0])}{char.ToUpper(czesci[0][1])}";
+                }
+
+                // 3. Jeśli nadal zajęty -> dopisz cyfrę (S1, S2...)
+                if (uzyte.Contains(kandydat))
+                {
+                    char pierwsza = char.ToUpper(czesci[0][0]);
+                    int numer = 1;
+                    do
+                    {
+                        kandydat = $"{pierwsza}{numer}";
+                        numer++;
+                    } while (uzyte.Contains(kandydat));
+                }
+
+                uzyte.Add(kandydat);
+                g.Inicjal = kandydat;
+            }
+        }
 
         private static ObservableCollection<Gospodarstwo> Wczytaj()
         {
@@ -90,16 +148,23 @@ namespace HomeBudget
                 }
             }
 
-            return new ObservableCollection<Gospodarstwo>();
+            return new ObservableCollection<Gospodarstwo>
+            {
+                new Gospodarstwo { Nazwa = "Gospodarstwo 1", HasloHash = HasloHelper.Hash("1234") },
+                new Gospodarstwo { Nazwa = "Gospodarstwo 2", HasloHash = HasloHelper.Hash("1234") }
+            };
         }
 
         public static void Zapisz()
         {
+            OdswiezInicjaly();
+
             string? katalog = Path.GetDirectoryName(SciezkaPliku);
             if (!string.IsNullOrEmpty(katalog))
             {
                 Directory.CreateDirectory(katalog);
             }
+
             string json = JsonSerializer.Serialize(Gospodarstwa, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(SciezkaPliku, json);
         }

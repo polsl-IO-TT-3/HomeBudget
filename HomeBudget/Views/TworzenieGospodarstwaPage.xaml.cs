@@ -34,6 +34,11 @@ namespace HomeBudget
                 ErrorText.Text = "Podaj nazwę gospodarstwa.";
                 return;
             }
+            if (BazaDanych.CzyNazwaIstnieje(nazwa))
+            {
+                ErrorText.Text = "Gospodarstwo o takiej nazwie już istnieje.";
+                return;
+            }
 
             if (string.IsNullOrEmpty(haslo))
             {
@@ -44,7 +49,7 @@ namespace HomeBudget
             BazaDanych.Gospodarstwa.Add(new Gospodarstwo
             {
                 Nazwa = nazwa,
-                Haslo = HasloHelper.Hash(HasloBox.Password)
+                HasloHash = HasloHelper.Hash(haslo)
             });
 
             BazaDanych.Zapisz();
