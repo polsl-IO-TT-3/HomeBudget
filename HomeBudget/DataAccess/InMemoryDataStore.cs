@@ -4,7 +4,7 @@ using HomeBudget.Services;
 namespace HomeBudget.DataAccess;
 
 /// <summary>
-/// Wzorzec Singleton – współdzielona baza in-memory dla Prototypu #1.
+/// Współdzielona baza in-memory dla Prototypu #1.
 /// </summary>
 public sealed class InMemoryDataStore
 {
@@ -20,13 +20,13 @@ public sealed class InMemoryDataStore
 
     private void Seed(AuthService authService)
     {
-        var catSalary = new Category { Name = "Wynagrodzenie", DefaultType = TransactionType.Income };
-        var catFood = new Category { Name = "Jedzenie", DefaultType = TransactionType.Expense };
-        var catHousing = new Category { Name = "Mieszkanie", DefaultType = TransactionType.Expense };
-        var catSubs = new Category { Name = "Opłaty stałe", DefaultType = TransactionType.Expense };
-        var catTransport = new Category { Name = "Transport", DefaultType = TransactionType.Expense };
-        var catHealth = new Category { Name = "Zdrowie i higiena", DefaultType = TransactionType.Expense };
-        var catRelax = new Category { Name = "Relaks", DefaultType = TransactionType.Expense };
+        var catSalary = new Category { Name = "Wynagrodzenie", IsVisibleInSummary = false, ShowAsSeparateCard = false };
+        var catFood = new Category { Name = "Jedzenie", IsVisibleInSummary = true, ShowAsSeparateCard = false };
+        var catHousing = new Category { Name = "Mieszkanie", IsVisibleInSummary = true, ShowAsSeparateCard = false };
+        var catSubs = new Category { Name = "Opłaty stałe", IsVisibleInSummary = true, ShowAsSeparateCard = false };
+        var catTransport = new Category { Name = "Transport", IsVisibleInSummary = true, ShowAsSeparateCard = false };
+        var catHealth = new Category { Name = "Zdrowie i higiena", IsVisibleInSummary = true, ShowAsSeparateCard = false };
+        var catRelax = new Category { Name = "Relaks", IsVisibleInSummary = true, ShowAsSeparateCard = false };
 
         Categories.AddRange(new[] { catSalary, catFood, catHousing, catSubs, catTransport, catHealth, catRelax });
 

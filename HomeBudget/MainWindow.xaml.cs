@@ -55,6 +55,11 @@ public partial class MainWindow : Window
         NewWorkspacePasswordInput.Clear();
     }
 
+    private void CategoryVisibilityCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        _viewModel.RefreshDashboard();
+    }
+
     private void Window_Closing(object? sender, CancelEventArgs e)
     {
         // Automatyczna kopia zapasowa przy zamknięciu aplikacji (zgodnie ze specyfikacją)

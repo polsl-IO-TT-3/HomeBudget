@@ -6,8 +6,8 @@
         xmlns:controls="clr-namespace:HomeBudget.Controls"
         mc:Ignorable="d"
         Title="{Binding WindowTitle}"
-        Height="740" Width="1180"
-        MinHeight="620" MinWidth="960"
+        Height="760" Width="1200"
+        MinHeight="640" MinWidth="980"
         WindowStartupLocation="CenterScreen"
         Background="#F7F8FC"
         Closing="Window_Closing">
@@ -175,7 +175,7 @@
         </Grid>
 
         <!-- ================================================================ -->
-        <!-- WIDOK 3: DASHBOARD (W STYLU PRZESŁANYCH ZDJĘĆ)                   -->
+        <!-- WIDOK 3: DASHBOARD (PANEL 1: PODGLĄD | PANEL 2: DODAWANIE)       -->
         <!-- ================================================================ -->
         <DockPanel Visibility="{Binding IsDashboardVisible, Converter={StaticResource BoolToVis}}" Margin="16,12,16,8">
             <!-- Górny pasek nawigacji aplikacji -->
@@ -204,21 +204,21 @@
                 <StatusBarItem Content="{Binding StatusMessage}" Foreground="#64748B" FontSize="11.5"/>
             </StatusBar>
 
-            <!-- Zakładki: 1) Przegląd miesiąca (jak zdjęcie 1 i 3), 2) Transakcje i Kategorie (jak zdjęcie 2) -->
             <TabControl Background="White" BorderBrush="#CBD5E1">
                 <!-- ======================================================== -->
-                <!-- ZAKŁADKA 1: PRZEGLĄD MIESIĄCA (DASHBOARD)                -->
+                <!-- PANEL 1: PODGLĄD MIESIĄCA                                -->
                 <!-- ======================================================== -->
-                <TabItem Header="  Przegląd miesiąca  " FontSize="13" FontWeight="SemiBold">
+                <TabItem Header="  Panel podglądu  " FontSize="13" FontWeight="SemiBold">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="14">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <!-- WIERSZ 1: MIESIĄC + 3 KAFELKI KPI (jak na górze wzoru) -->
+                            <!-- WIERSZ 1: MIESIĄC + 3 KAFELKI KPI -->
                             <Grid Grid.Row="0" Margin="0,0,0,16">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="1.2*"/>
@@ -227,7 +227,6 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Nagłówek miesiąca z wyborem okresu -->
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <Button Content="◀" Command="{Binding PreviousMonthCommand}" Width="26" Height="26" Background="White" BorderBrush="#CBD5E1" Margin="0,0,8,0"/>
@@ -238,7 +237,6 @@
                                     <TextBlock Text="{Binding PeriodRangeText}" FontSize="11" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                                 </StackPanel>
 
-                                <!-- KPI 1: AKTUALNY PRZYCHÓD -->
                                 <Border Grid.Column="1" Style="{StaticResource DashboardCardStyle}" Margin="6,0">
                                     <DockPanel>
                                         <Border DockPanel.Dock="Top" Background="#D8CEF0" Padding="8,6">
@@ -248,7 +246,6 @@
                                     </DockPanel>
                                 </Border>
 
-                                <!-- KPI 2: AKTUALNE WYDATKI -->
                                 <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}" Margin="6,0">
                                     <DockPanel>
                                         <Border DockPanel.Dock="Top" Background="#D8CEF0" Padding="8,6">
@@ -258,7 +255,6 @@
                                     </DockPanel>
                                 </Border>
 
-                                <!-- KPI 3: POZOSTAŁO W BUDŻECIE -->
                                 <Border Grid.Column="3" Style="{StaticResource DashboardCardStyle}" Margin="6,0,0,0">
                                     <DockPanel>
                                         <Border DockPanel.Dock="Top" Background="#D8CEF0" Padding="8,6">
@@ -269,7 +265,7 @@
                                 </Border>
                             </Grid>
 
-                            <!-- WIERSZ 2: PRZYCHÓD | OPŁATY STAŁE | WYDATKI VS. BUDŻET (DONUT) -->
+                            <!-- WIERSZ 2: PRZYCHÓD | OPŁATY STAŁE | WYDATKI VS. BUDŻET (WYKRES KOŁOWY) -->
                             <Grid Grid.Row="1" Margin="0,0,0,16">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="1.15*"/>
@@ -277,7 +273,7 @@
                                     <ColumnDefinition Width="1.1*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Karta: PRZYCHÓD (turkusowy nagłówek) -->
+                                <!-- Karta: PRZYCHÓD -->
                                 <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}" Margin="0,0,10,0">
                                     <DockPanel>
                                         <Border DockPanel.Dock="Top" Background="#1D9A8E" Padding="8,7">
@@ -301,7 +297,7 @@
                                     </DockPanel>
                                 </Border>
 
-                                <!-- Karta: OPŁATY STAŁE / SUBSKRYPCJE (miętowy nagłówek jak na zdjęciu 3) -->
+                                <!-- Karta: OPŁATY STAŁE / CYKLICZNE -->
                                 <Border Grid.Column="1" Style="{StaticResource DashboardCardStyle}" Margin="5,0">
                                     <DockPanel>
                                         <Border DockPanel.Dock="Top" Background="#8FD3C7" Padding="8,7">
@@ -326,7 +322,7 @@
                                     </DockPanel>
                                 </Border>
 
-                                <!-- Karta: WYDATKI VS. BUDŻET (wykres kołowy / donut) -->
+                                <!-- Karta: WYKRES KOŁOWY (WYDATKI VS. BUDŻET) -->
                                 <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}" Margin="10,0,0,0">
                                     <DockPanel>
                                         <Border DockPanel.Dock="Top" Background="#D8CEF0" Padding="8,7">
@@ -337,13 +333,14 @@
                                 </Border>
                             </Grid>
 
-                            <!-- WIERSZ 3: WYDATKI W KATEGORIACH + SZYBKIE USTAWIANIE LIMITU -->
-                            <Grid Grid.Row="2">
+                            <!-- WIERSZ 3: LIMITY I WYDATKI W KATEGORIACH | WSZYSTKIE WYDATKI [PODSUMOWANIE] -->
+                            <Grid Grid.Row="2" Margin="0,0,0,16">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="2*"/>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="1.5*"/>
+                                    <ColumnDefinition Width="1*"/>
                                 </Grid.ColumnDefinitions>
 
+                                <!-- Karta: LIMITY I WYDATKI W KATEGORIACH -->
                                 <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}" Margin="0,0,10,0">
                                     <DockPanel>
                                         <Border DockPanel.Dock="Top" Background="#F49AB8" Padding="8,7">
@@ -351,51 +348,91 @@
                                         </Border>
                                         <DataGrid ItemsSource="{Binding CategorySummaries}" AutoGenerateColumns="False" IsReadOnly="True"
                                                   HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0"
-                                                  Background="White" RowHeight="28" MaxHeight="200">
+                                                  Background="White" RowHeight="28" MaxHeight="220">
                                             <DataGrid.Columns>
                                                 <DataGridTextColumn Header="KATEGORIA" Binding="{Binding CategoryName}" Width="*"/>
                                                 <DataGridTextColumn Header="PLANOWANY LIMIT" Binding="{Binding PlannedLimitText}" Width="140"/>
                                                 <DataGridTextColumn Header="RZECZYWISTE WYDATKI" Binding="{Binding ActualSpentText}" Width="150"/>
-                                                <DataGridTextColumn Header="UDZIAŁ %" Binding="{Binding SharePercentText}" Width="85"/>
                                             </DataGrid.Columns>
                                         </DataGrid>
                                     </DockPanel>
                                 </Border>
 
-                                <!-- Panel ustawiania limitu -->
+                                <!-- Karta: WSZYSTKIE WYDATKI [PODSUMOWANIE] -->
                                 <Border Grid.Column="1" Style="{StaticResource DashboardCardStyle}" Margin="6,0,0,0">
                                     <DockPanel>
-                                        <Border DockPanel.Dock="Top" Background="#8FD3C7" Padding="8,7">
-                                            <TextBlock Text="USTAW LIMIT KATEGORII" FontSize="12" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Center"/>
+                                        <Border DockPanel.Dock="Top" Background="#BBA8EB" Padding="8,7">
+                                            <TextBlock Text="WSZYSTKIE WYDATKI [PODSUMOWANIE]" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                                         </Border>
-                                        <StackPanel Margin="14,12">
-                                            <TextBlock Text="Kategoria:" FontSize="12" Foreground="#475569" Margin="0,0,0,4"/>
-                                            <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedLimitCategory}" DisplayMemberPath="Name" Height="28" Margin="0,0,0,10"/>
-
-                                            <TextBlock Text="Miesięczny limit (zł):" FontSize="12" Foreground="#475569" Margin="0,0,0,4"/>
-                                            <TextBox Text="{Binding NewLimitAmountText, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Padding="6,0" Margin="0,0,0,12"/>
-
-                                            <Button Content="Zapisz limit" Command="{Binding SetLimitCommand}" Height="30" Background="#1D9A8E" Foreground="White" FontWeight="SemiBold" BorderThickness="0"/>
-                                        </StackPanel>
+                                        <DataGrid ItemsSource="{Binding CategorySummaries}" AutoGenerateColumns="False" IsReadOnly="True"
+                                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0"
+                                                  Background="White" RowHeight="28" MaxHeight="220">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="KATEGORIA" Binding="{Binding CategoryName}" Width="*"/>
+                                                <DataGridTextColumn Header="KWOTA" Binding="{Binding ActualSpentText}" Width="105"/>
+                                                <DataGridTextColumn Header="%" Binding="{Binding SharePercentText}" Width="55"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
                                     </DockPanel>
                                 </Border>
                             </Grid>
+
+                            <!-- WIERSZ 4: OSOBNE KAFELKI WYBRANYCH KATEGORII (NA WZÓR PRZYCHODU / OPŁAT STAŁYCH) -->
+                            <StackPanel Grid.Row="3" Visibility="{Binding HasCategoryCards, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="WYBRANE KATEGORIE — OSOBNE KAFELKI"
+                                           FontSize="12" FontWeight="Bold" Foreground="#475569" Margin="2,0,0,8"/>
+
+                                <ItemsControl ItemsSource="{Binding CategoryCards}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource DashboardCardStyle}" Width="358" Margin="0,0,14,14">
+                                                <DockPanel>
+                                                    <Border DockPanel.Dock="Top" Background="{Binding HeaderColor}" Padding="8,7">
+                                                        <TextBlock Text="{Binding HeaderTitle}" FontSize="12" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Center"/>
+                                                    </Border>
+                                                    <Border DockPanel.Dock="Bottom" Background="#E2E8F0" Padding="10,6">
+                                                        <DockPanel>
+                                                            <TextBlock Text="SUMA" FontWeight="Bold" FontSize="11.5" Foreground="#1E293B"/>
+                                                            <TextBlock Text="{Binding TotalAmountText}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right" Foreground="#1E293B"/>
+                                                        </DockPanel>
+                                                    </Border>
+                                                    <DataGrid ItemsSource="{Binding Transactions}" AutoGenerateColumns="False" IsReadOnly="True"
+                                                              HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0"
+                                                              Background="White" RowHeight="27" Height="185">
+                                                        <DataGrid.Columns>
+                                                            <DataGridTextColumn Header="DATA" Binding="{Binding Date, StringFormat=dd.MM}" Width="55"/>
+                                                            <DataGridTextColumn Header="NAZWA" Binding="{Binding Title}" Width="*"/>
+                                                            <DataGridTextColumn Header="TYP" Binding="{Binding TypeLabel}" Width="68"/>
+                                                            <DataGridTextColumn Header="KWOTA" Binding="{Binding Amount, StringFormat={}{0:N2} zł}" Width="88"/>
+                                                        </DataGrid.Columns>
+                                                    </DataGrid>
+                                                </DockPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
                         </Grid>
                     </ScrollViewer>
                 </TabItem>
 
                 <!-- ======================================================== -->
-                <!-- ZAKŁADKA 2: TRANSAKCJE I KATEGORIE (JAK ZDJĘCIE 2)       -->
+                <!-- PANEL 2: TRANSAKCJE, LIMITY I KATEGORIE                  -->
                 <!-- ======================================================== -->
                 <TabItem Header="  Transakcje i Kategorie  " FontSize="13" FontWeight="SemiBold">
                     <Grid Margin="14">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.85*"/>
+                            <ColumnDefinition Width="1.45*"/>
                             <ColumnDefinition Width="14"/>
-                            <ColumnDefinition Width="1.15*"/>
+                            <ColumnDefinition Width="1.35*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Lewa strona: WYDATKI / PRZYCHODY TRANSAKCJE -->
+                        <!-- Lewa kolumna: TRANSAKCJE W WYBRANYM MIESIĄCU -->
                         <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}">
                             <DockPanel>
                                 <Border DockPanel.Dock="Top" Background="#BBA8EB" Padding="10,8">
@@ -411,25 +448,25 @@
                                           Background="White" RowHeight="30">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="DATA" Binding="{Binding Date, StringFormat=dd.MM.yyyy}" Width="95"/>
-                                        <DataGridTextColumn Header="KATEGORIA" Binding="{Binding CategoryName}" Width="140"/>
+                                        <DataGridTextColumn Header="KATEGORIA" Binding="{Binding CategoryName}" Width="135"/>
                                         <DataGridTextColumn Header="OPIS / TYTUŁ" Binding="{Binding Title}" Width="*"/>
-                                        <DataGridTextColumn Header="TYP" Binding="{Binding TypeLabel}" Width="80"/>
-                                        <DataGridTextColumn Header="KWOTA" Binding="{Binding Amount, StringFormat={}{0:N2} zł}" Width="105"/>
+                                        <DataGridTextColumn Header="TYP" Binding="{Binding TypeLabel}" Width="78"/>
+                                        <DataGridTextColumn Header="KWOTA" Binding="{Binding Amount, StringFormat={}{0:N2} zł}" Width="100"/>
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </DockPanel>
                         </Border>
 
-                        <!-- Prawa strona: Dodawanie transakcji + Podsumowanie kategorii -->
+                        <!-- Prawa kolumna: Dodaj transakcję | Ustaw limit | Utwórz kategorię | Widoczność kategorii (2 checkboxy) -->
                         <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
                             <StackPanel>
-                                <!-- Formularz dodawania transakcji -->
-                                <Border Style="{StaticResource DashboardCardStyle}" Margin="0,0,0,14">
+                                <!-- 1. DODAJ NOWĄ TRANSAKCJĘ -->
+                                <Border Style="{StaticResource DashboardCardStyle}" Margin="0,0,0,12">
                                     <DockPanel>
                                         <Border DockPanel.Dock="Top" Background="#BBA8EB" Padding="8,7">
                                             <TextBlock Text="DODAJ NOWĄ TRANSAKCJĘ" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                                         </Border>
-                                        <StackPanel Margin="14,12">
+                                        <StackPanel Margin="14,10">
                                             <TextBlock Text="Kategoria:" FontSize="12" Foreground="#475569"/>
                                             <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" DisplayMemberPath="Name" Height="28" Margin="0,3,0,8"/>
 
@@ -440,35 +477,102 @@
                                             <TextBox Text="{Binding NewAmountText, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Padding="6,0" Margin="0,3,0,8"/>
 
                                             <StackPanel Orientation="Horizontal" Margin="0,2,0,8">
-                                                <RadioButton Content="Wydatek" IsChecked="{Binding IsExpense}" Margin="0,0,18,0"/>
-                                                <RadioButton Content="Przychód"/>
+                                                <RadioButton GroupName="TransactionTypeGroup" Content="Wydatek" IsChecked="{Binding IsExpense}" Margin="0,0,18,0"/>
+                                                <RadioButton GroupName="TransactionTypeGroup" Content="Przychód"/>
                                             </StackPanel>
 
-                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                                 <CheckBox Content="Opłata stała / cykliczna (dzień):" IsChecked="{Binding IsRecurring}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                                 <TextBox Text="{Binding BillingDayText}" Width="42" IsEnabled="{Binding IsRecurring}" VerticalContentAlignment="Center" Padding="4,0"/>
                                             </StackPanel>
 
-                                            <Button Content="Dodaj transakcję" Command="{Binding AddTransactionCommand}" Height="32" Background="#7C5CBF" Foreground="White" FontWeight="SemiBold" BorderThickness="0"/>
+                                            <Button Content="Dodaj transakcję" Command="{Binding AddTransactionCommand}" Height="30" Background="#7C5CBF" Foreground="White" FontWeight="SemiBold" BorderThickness="0"/>
                                         </StackPanel>
                                     </DockPanel>
                                 </Border>
 
-                                <!-- WSZYSTKIE WYDATKI [PODSUMOWANIE] (jak prawy dolny róg na zdjęciu 2) -->
+                                <!-- 2. USTAW LIMIT KATEGORII -->
+                                <Border Style="{StaticResource DashboardCardStyle}" Margin="0,0,0,12">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Top" Background="#8FD3C7" Padding="8,7">
+                                            <TextBlock Text="USTAW LIMIT KATEGORII" FontSize="12" FontWeight="Bold" Foreground="#1E293B" HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Margin="14,10">
+                                            <TextBlock Text="Kategoria:" FontSize="12" Foreground="#475569"/>
+                                            <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedLimitCategory}" DisplayMemberPath="Name" Height="28" Margin="0,3,0,8"/>
+
+                                            <TextBlock Text="Miesięczny limit (zł):" FontSize="12" Foreground="#475569"/>
+                                            <DockPanel Margin="0,3,0,0">
+                                                <Button DockPanel.Dock="Right" Content="Zapisz limit" Command="{Binding SetLimitCommand}" Width="105" Height="28" Margin="8,0,0,0" Background="#1D9A8E" Foreground="White" FontWeight="SemiBold" BorderThickness="0"/>
+                                                <TextBox Text="{Binding NewLimitAmountText, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Padding="6,0"/>
+                                            </DockPanel>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+
+                                <!-- 3. UTWÓRZ NOWĄ KATEGORIĘ (TYLKO NAZWA - BEZ WYDATEK/PRZYCHÓD) -->
+                                <Border Style="{StaticResource DashboardCardStyle}" Margin="0,0,0,12">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Top" Background="#F49AB8" Padding="8,7">
+                                            <TextBlock Text="UTWÓRZ NOWĄ KATEGORIĘ" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Margin="14,10">
+                                            <TextBlock Text="Nazwa kategorii:" FontSize="12" Foreground="#475569"/>
+                                            <DockPanel Margin="0,3,0,0">
+                                                <Button DockPanel.Dock="Right" Content="Utwórz kategorię" Command="{Binding AddCategoryCommand}" Width="125" Height="28" Margin="8,0,0,0" Background="#DB6B97" Foreground="White" FontWeight="SemiBold" BorderThickness="0"/>
+                                                <TextBox Text="{Binding NewCategoryName, UpdateSourceTrigger=PropertyChanged}" Height="28" VerticalContentAlignment="Center" Padding="6,0"/>
+                                            </DockPanel>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Border>
+
+                                <!-- 4. WIDOCZNOŚĆ KATEGORII NA PANELU PODGLĄDU (2 CHECKBOXY) -->
                                 <Border Style="{StaticResource DashboardCardStyle}">
                                     <DockPanel>
-                                        <Border DockPanel.Dock="Top" Background="#BBA8EB" Padding="8,7">
-                                            <TextBlock Text="WSZYSTKIE WYDATKI [PODSUMOWANIE]" FontSize="11.5" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                        <Border DockPanel.Dock="Top" Background="#D8CEF0" Padding="8,7">
+                                            <TextBlock Text="WYŚWIETLANIE KATEGORII NA PANELU PODGLĄDU" FontSize="11.5" FontWeight="Bold" Foreground="#3B2F63" HorizontalAlignment="Center"/>
                                         </Border>
-                                        <DataGrid ItemsSource="{Binding CategorySummaries}" AutoGenerateColumns="False" IsReadOnly="True"
-                                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" BorderThickness="0"
-                                                  Background="White" RowHeight="26">
-                                            <DataGrid.Columns>
-                                                <DataGridTextColumn Header="KATEGORIA" Binding="{Binding CategoryName}" Width="*"/>
-                                                <DataGridTextColumn Header="KWOTA" Binding="{Binding ActualSpentText}" Width="95"/>
-                                                <DataGridTextColumn Header="%" Binding="{Binding SharePercentText}" Width="50"/>
-                                            </DataGrid.Columns>
-                                        </DataGrid>
+
+                                        <StackPanel Margin="14,10">
+                                            <!-- Nagłówki kolumn -->
+                                            <Grid Margin="0,0,0,6">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="125"/>
+                                                    <ColumnDefinition Width="105"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="Kategoria" FontSize="11.5" FontWeight="Bold" Foreground="#475569"/>
+                                                <TextBlock Grid.Column="1" Text="Limity i podsum." FontSize="11.5" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center"/>
+                                                <TextBlock Grid.Column="2" Text="Osobny kafelek" FontSize="11.5" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center"/>
+                                            </Grid>
+
+                                            <Separator Margin="0,0,0,6"/>
+
+                                            <ItemsControl ItemsSource="{Binding Categories}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Grid Margin="0,3">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="125"/>
+                                                                <ColumnDefinition Width="105"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="12.5" Foreground="#1E293B" VerticalAlignment="Center"/>
+                                                            <CheckBox Grid.Column="1"
+                                                                      IsChecked="{Binding IsVisibleInSummary, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                      Click="CategoryVisibilityCheckBox_Click"
+                                                                      HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"/>
+                                                            <CheckBox Grid.Column="2"
+                                                                      IsChecked="{Binding ShowAsSeparateCard, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                      Click="CategoryVisibilityCheckBox_Click"
+                                                                      HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"/>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
                                     </DockPanel>
                                 </Border>
                             </StackPanel>

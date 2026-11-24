@@ -22,6 +22,7 @@ public class BudgetService
     private readonly ITransactionRepository _transactionRepo;
     private readonly ICategoryRepository _categoryRepo;
     private readonly IBudgetLimitRepository _limitRepo;
+    private readonly HashSet<(Guid WorkspaceId, int Year, int Month)> _propagatedMonths = new();
 
     public event EventHandler<LimitExceededEventArgs>? LimitExceeded;
 
@@ -37,11 +38,97 @@ public class BudgetService
 
     public IEnumerable<Category> GetCategories() => _categoryRepo.GetAll();
 
-    public IEnumerable<Transaction> GetMonthlyTransactions(Guid workspaceId, int year, int month) =>
-        _transactionRepo.GetByWorkspace(workspaceId)
+    public Category AddCategory(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Podaj nazwę nowej kategorii.");
+
+        var trimmed = name.Trim();
+        if (_categoryRepo.GetAll().Any(c => c.Name.Equals(trimmed, StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidOperationException("Kategoria o takiej nazwie już istnieje.");
+
+        var category = new Category
+        {
+            Name = trimmed,
+            IsVisibleInSummary = true,
+            ShowAsSeparateCard = false
+        };
+
+        _categoryRepo.Add(category);
+        return category;
+    }
+
+    public IEnumerable<Transaction> GetMonthlyTransactions(Guid workspaceId, int year, int month)
+    {
+        EnsureRecurringTransactionsForMonth(workspaceId, year, month);
+
+        return _transactionRepo.GetByWorkspace(workspaceId)
             .Where(t => t.Date.Year == year && t.Date.Month == month)
             .OrderByDescending(t => t.Date)
             .ToList();
+    }
+
+    /// <summary>
+    /// Automatycznie przenosi opłaty stałe (cykliczne) z wcześniejszych miesięcy na kolejne miesiące.
+    /// </summary>
+    private void EnsureRecurringTransactionsForMonth(Guid workspaceId, int year, int month)
+    {
+        var key = (workspaceId, year, month);
+        if (_propagatedMonths.Contains(key))
+            return;
+
+        var targetMonthStart = new DateTime(year, month, 1);
+        var allWorkspaceTransactions = _transactionRepo.GetByWorkspace(workspaceId).ToList();
+
+        // Szablony opłat cyklicznych z miesięcy wcześniejszych niż wybrany
+        var earlierRecurring = allWorkspaceTransactions
+            .Where(t => t.IsRecurring && new DateTime(t.Date.Year, t.Date.Month, 1) < targetMonthStart)
+            .GroupBy(t => new
+            {
+                t.CategoryId,
+                Title = t.Title.ToLowerInvariant(),
+                t.Type,
+                t.BillingDay
+            })
+            .Select(g => g.OrderByDescending(t => t.Date).First())
+            .ToList();
+
+        var existingInTargetMonth = allWorkspaceTransactions
+            .Where(t => t.Date.Year == year && t.Date.Month == month && t.IsRecurring)
+            .ToList();
+
+        foreach (var template in earlierRecurring)
+        {
+            bool alreadyExists = existingInTargetMonth.Any(t =>
+                t.CategoryId == template.CategoryId &&
+                t.Title.Equals(template.Title, StringComparison.OrdinalIgnoreCase) &&
+                t.Type == template.Type &&
+                t.BillingDay == template.BillingDay);
+
+            if (alreadyExists)
+                continue;
+
+            int day = Math.Min(template.BillingDay ?? template.Date.Day, DateTime.DaysInMonth(year, month));
+            var carriedOver = new Transaction
+            {
+                WorkspaceId = workspaceId,
+                CategoryId = template.CategoryId,
+                CategoryName = template.CategoryName,
+                Title = template.Title,
+                Amount = template.Amount,
+                Type = template.Type,
+                Date = new DateTime(year, month, day),
+                IsRecurring = true,
+                BillingDay = template.BillingDay ?? day,
+                IsPaid = false // W nowym miesiącu opłata domyślnie czeka na opłacenie
+            };
+
+            _transactionRepo.Add(carriedOver);
+            existingInTargetMonth.Add(carriedOver);
+        }
+
+        _propagatedMonths.Add(key);
+    }
 
     public IEnumerable<BudgetLimit> GetLimits(Guid workspaceId) =>
         _limitRepo.GetByWorkspace(workspaceId);
@@ -81,6 +168,14 @@ public class BudgetService
 
         _transactionRepo.Add(transaction);
 
+        // Jeśli dodano nową opłatę cykliczną, wyczyść cache dla późniejszych miesięcy, aby mogła na nie przejść
+        if (isRecurring)
+        {
+            var addedMonthStart = new DateTime(date.Year, date.Month, 1);
+            _propagatedMonths.RemoveWhere(k =>
+                k.WorkspaceId == workspaceId && new DateTime(k.Year, k.Month, 1) > addedMonthStart);
+        }
+
         if (type == TransactionType.Expense)
         {
             CheckBudgetLimit(workspaceId, category, date.Year, date.Month);
@@ -111,7 +206,7 @@ public class BudgetService
     {
         var today = DateTime.Today;
         var recurring = _transactionRepo.GetByWorkspace(workspaceId)
-            .Where(t => t.IsRecurring && t.BillingDay.HasValue && !t.IsPaid)
+            .Where(t => t.IsRecurring && t.BillingDay.HasValue && !t.IsPaid && t.Date.Year == today.Year && t.Date.Month == today.Month)
             .ToList();
 
         var reminders = new List<string>();

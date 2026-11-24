@@ -14,4 +14,6 @@ public class InMemoryCategoryRepository : ICategoryRepository
     public IEnumerable<Category> GetAll() => _store.Categories.ToList();
 
     public Category? GetById(Guid id) => _store.Categories.FirstOrDefault(c => c.Id == id);
+
+    public void Add(Category category) => _store.Categories.Add(category);
 }

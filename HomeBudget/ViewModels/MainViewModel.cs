@@ -22,6 +22,11 @@ public class MainViewModel : ViewModelBase
         "LIPIEC", "SIERPIEŃ", "WRZESIEŃ", "PAŹDZIERNIK", "LISTOPAD", "GRUDZIEŃ"
     };
 
+    private static readonly string[] CardHeaderColors =
+    {
+        "#8FD3C7", "#F49AB8", "#BBA8EB", "#7CC4FA", "#F6C28B"
+    };
+
     private readonly WorkspaceService _workspaceService;
     private readonly BudgetService _budgetService;
     private readonly BackupService _backupService;
@@ -48,6 +53,9 @@ public class MainViewModel : ViewModelBase
     private Category? _selectedLimitCategory;
     private string _newLimitAmountText = string.Empty;
 
+    // Formularz nowej kategorii (bez wyboru wydatek/przychód)
+    private string _newCategoryName = string.Empty;
+
     private string _statusMessage = "Tryb offline – dane zapisywane lokalnie.";
     private string _reminderBanner = string.Empty;
 
@@ -57,6 +65,9 @@ public class MainViewModel : ViewModelBase
     public ObservableCollection<Transaction> MonthlyIncomes { get; } = new();
     public ObservableCollection<Transaction> RecurringExpenses { get; } = new();
     public ObservableCollection<CategorySummaryItem> CategorySummaries { get; } = new();
+    public ObservableCollection<CategoryCardItem> CategoryCards { get; } = new();
+
+    public bool HasCategoryCards => CategoryCards.Count > 0;
 
     public ActiveScreen CurrentScreen
     {
@@ -143,6 +154,9 @@ public class MainViewModel : ViewModelBase
     public Category? SelectedLimitCategory { get => _selectedLimitCategory; set => SetProperty(ref _selectedLimitCategory, value); }
     public string NewLimitAmountText { get => _newLimitAmountText; set => SetProperty(ref _newLimitAmountText, value); }
 
+    // Formularz nowej kategorii
+    public string NewCategoryName { get => _newCategoryName; set => SetProperty(ref _newCategoryName, value); }
+
     public string StatusMessage { get => _statusMessage; set => SetProperty(ref _statusMessage, value); }
     public string ReminderBanner { get => _reminderBanner; set => SetProperty(ref _reminderBanner, value); }
     public bool HasReminders => !string.IsNullOrWhiteSpace(ReminderBanner);
@@ -156,6 +170,7 @@ public class MainViewModel : ViewModelBase
     public ICommand AddTransactionCommand { get; }
     public ICommand DeleteTransactionCommand { get; }
     public ICommand SetLimitCommand { get; }
+    public ICommand AddCategoryCommand { get; }
     public ICommand ExportBackupCommand { get; }
 
     public MainViewModel(
@@ -177,6 +192,7 @@ public class MainViewModel : ViewModelBase
         AddTransactionCommand = new RelayCommand(_ => AddTransaction());
         DeleteTransactionCommand = new RelayCommand(_ => DeleteSelectedTransaction(), _ => SelectedTransaction is not null);
         SetLimitCommand = new RelayCommand(_ => SetCategoryLimit());
+        AddCategoryCommand = new RelayCommand(_ => AddCategory());
         ExportBackupCommand = new RelayCommand(_ => ExportBackup());
 
         LoadCategories();
@@ -185,12 +201,21 @@ public class MainViewModel : ViewModelBase
 
     private void LoadCategories()
     {
+        var previousSelectedId = SelectedCategory?.Id;
+        var previousLimitId = SelectedLimitCategory?.Id;
+
         Categories.Clear();
         foreach (var cat in _budgetService.GetCategories())
+        {
             Categories.Add(cat);
+        }
 
-        SelectedCategory = Categories.FirstOrDefault(c => c.DefaultType == TransactionType.Expense) ?? Categories.FirstOrDefault();
-        SelectedLimitCategory = SelectedCategory;
+        SelectedCategory = Categories.FirstOrDefault(c => c.Id == previousSelectedId)
+            ?? Categories.FirstOrDefault();
+
+        SelectedLimitCategory = Categories.FirstOrDefault(c => c.Id == previousLimitId)
+            ?? Categories.FirstOrDefault(c => c.IsVisibleInSummary)
+            ?? Categories.FirstOrDefault();
     }
 
     public void RefreshWorkspaces()
@@ -256,12 +281,12 @@ public class MainViewModel : ViewModelBase
                 RecurringExpenses.Add(t);
         }
 
-        // Podsumowanie kategorii (Planowane limity vs Rzeczywiste wydatki + % udział)
+        // 1. Podsumowanie kategorii (checkbox "Limity i podsumowanie")
         CategorySummaries.Clear();
         decimal totalExpenses = TotalExpenses;
-        var expenseCategories = Categories.Where(c => c.DefaultType == TransactionType.Expense).ToList();
+        var summaryCategories = Categories.Where(c => c.IsVisibleInSummary).ToList();
 
-        foreach (var cat in expenseCategories)
+        foreach (var cat in summaryCategories)
         {
             decimal spent = transactions.Where(t => t.Type == TransactionType.Expense && t.CategoryId == cat.Id).Sum(t => t.Amount);
             decimal limit = limits.FirstOrDefault(l => l.CategoryId == cat.Id)?.MonthlyLimit ?? 0m;
@@ -276,7 +301,23 @@ public class MainViewModel : ViewModelBase
             });
         }
 
-        // Przypomnienia o nadchodzących opłatach cyklicznych
+        // 2. Osobne kafelki dla wybranych kategorii (checkbox "Osobny kafelek")
+        CategoryCards.Clear();
+        int colorIndex = 0;
+        foreach (var cat in Categories.Where(c => c.ShowAsSeparateCard))
+        {
+            var catTransactions = transactions.Where(t => t.CategoryId == cat.Id).ToList();
+            CategoryCards.Add(new CategoryCardItem
+            {
+                CategoryName = cat.Name,
+                HeaderColor = CardHeaderColors[colorIndex % CardHeaderColors.Length],
+                Transactions = catTransactions
+            });
+            colorIndex++;
+        }
+        OnPropertyChanged(nameof(HasCategoryCards));
+
+        // 3. Przypomnienia o nadchodzących opłatach cyklicznych
         var reminders = _budgetService.GetUpcomingRecurringReminders(LoggedInWorkspace.Id);
         ReminderBanner = reminders.Count > 0
             ? "Nadchodzące opłaty cykliczne: " + string.Join(" | ", reminders)
@@ -371,6 +412,26 @@ public class MainViewModel : ViewModelBase
         catch (Exception ex)
         {
             MessageBox.Show(ex.Message, "Błąd", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void AddCategory()
+    {
+        try
+        {
+            var created = _budgetService.AddCategory(NewCategoryName);
+
+            NewCategoryName = string.Empty;
+            LoadCategories();
+            SelectedCategory = created;
+            SelectedLimitCategory = created;
+
+            RefreshDashboard();
+            StatusMessage = $"Utworzono nową kategorię: {created.Name}.";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Błąd tworzenia kategorii", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
