@@ -19,15 +19,11 @@
                        Margin="0,0,0,28"/>
 
             <Button Content="Wyłącz aplikację"
-                    Click="WylaczAplikacje_Click"
-                    Width="180"
-                    Height="38"
-                    Background="White"
-                    Foreground="#DC2626"
-                    BorderBrush="#DC2626"
-                    BorderThickness="1.3"
-                    FontWeight="SemiBold"
-                    Cursor="Hand"/>
+        Click="WylaczAplikacje_Click"
+        Width="180"
+        Height="38"
+        Style="{StaticResource DangerButtonStyle}"
+        ToolTip="Zamknij program"/>
         </StackPanel>
     </Grid>
 </Page>

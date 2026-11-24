@@ -35,6 +35,12 @@ namespace HomeBudget
                 return;
             }
 
+            if (string.IsNullOrEmpty(haslo))
+            {
+                ErrorText.Text = "Hasło nie może być puste.";
+                return;
+            }
+
             BazaDanych.Gospodarstwa.Add(new Gospodarstwo
             {
                 Nazwa = nazwa,

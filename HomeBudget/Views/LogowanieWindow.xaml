@@ -43,20 +43,17 @@
                    Foreground="#DC2626"
                    FontSize="12"
                    TextWrapping="Wrap"
+                   ToolTip="Wpisz hasło"
                    Margin="0,8,0,0"/>
 
         <Button x:Name="ConfirmButton"
-                Grid.Row="4"
-                Content="Loguj"
-                Width="90"
-                Height="30"
-                HorizontalAlignment="Right"
-                IsDefault="True"
-                Click="Loguj_Click"
-                Background="White"
-                BorderBrush="#334155"
-                BorderThickness="1.2"
-                FontWeight="SemiBold"
-                Cursor="Hand"/>
+        Grid.Row="4"
+        Content="Loguj"
+        Width="96"
+        HorizontalAlignment="Right"
+        IsDefault="True"
+        Click="Loguj_Click"
+        Style="{StaticResource PrimaryButtonStyle}"
+        ToolTip="Zaloguj się do wybranego gospodarstwa"/>
     </Grid>
 </Window>

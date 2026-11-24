@@ -24,6 +24,7 @@
                      Padding="8,0"
                      BorderBrush="#1E293B"
                      BorderThickness="1.3"
+                     ToolTip="Wpisz nową nazwę gospodarstwa"
                      Margin="0,0,0,16"/>
 
             <!-- Potwierdzenie obecnym hasłem (ukryte, jeśli gospodarstwo nie ma hasła) -->
@@ -38,6 +39,7 @@
                              VerticalContentAlignment="Center"
                              Padding="8,0"
                              BorderBrush="#1E293B"
+                             ToolTip="Wpisz obecne hasło"
                              BorderThickness="1.3"/>
             </StackPanel>
 
@@ -48,6 +50,7 @@
                       FontWeight="SemiBold"
                       Foreground="#1E293B"
                       Margin="0,0,0,10"
+                      ToolTip="Rozwiń sekcję zmiany hasła"
                       Cursor="Hand">
                 <StackPanel Margin="0,10,0,0">
                     <TextBlock Text="Nowe hasło"
@@ -60,6 +63,7 @@
                                  VerticalContentAlignment="Center"
                                  Padding="8,0"
                                  BorderBrush="#1E293B"
+                                 ToolTip="Wpisz nowe hasło"
                                  BorderThickness="1.3"/>
                 </StackPanel>
             </Expander>
@@ -73,26 +77,19 @@
 
         <Grid Grid.Row="1">
             <Button Content="Wróć"
-                    Width="100"
-                    Height="34"
-                    HorizontalAlignment="Left"
-                    Click="Cofnij_Click"
-                    Background="White"
-                    BorderBrush="#64748B"
-                    BorderThickness="1.2"
-                    Cursor="Hand"/>
+        Width="100"
+        HorizontalAlignment="Left"
+        Click="Cofnij_Click"
+        Style="{StaticResource SecondaryButtonStyle}"
+        ToolTip="Anuluj i wróć do listy gospodarstw"/>
 
             <Button Content="Zapisz"
-                    Width="110"
-                    Height="34"
-                    HorizontalAlignment="Right"
-                    IsDefault="True"
-                    Click="Zapisz_Click"
-                    Background="White"
-                    BorderBrush="#1E293B"
-                    BorderThickness="1.4"
-                    FontWeight="SemiBold"
-                    Cursor="Hand"/>
+        Width="110"
+        HorizontalAlignment="Right"
+        IsDefault="True"
+        Click="Zapisz_Click"
+        Style="{StaticResource PrimaryButtonStyle}"
+        ToolTip="Zapisz zmiany w gospodarstwie"/>
         </Grid>
     </Grid>
 </Page>

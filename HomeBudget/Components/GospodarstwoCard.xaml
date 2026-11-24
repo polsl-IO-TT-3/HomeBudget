@@ -79,8 +79,10 @@
 
         <!-- Kafelek gospodarstwa -->
         <Button Grid.Column="0"
-                Style="{StaticResource WorkspaceCardButtonStyle}"
-                Click="Otworz_Click">
+        Style="{StaticResource WorkspaceCardButtonStyle}"
+        Click="Otworz_Click"
+        ToolTip="Otwórz gospodarstwo">
+
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -126,7 +128,7 @@
                 Content="✎"
                 FontSize="16"
                 Margin="8,0,0,0"
-                ToolTip="Edytuj nazwę lub hasło"
+                ToolTip="Przejdź do edytycji nazwy lub zmiany hasła"
                 Click="Edytuj_Click"/>
 
         <!-- Przycisk usuwania -->
@@ -136,7 +138,7 @@
                 FontSize="14"
                 Foreground="#DC2626"
                 Margin="6,0,0,0"
-                ToolTip="Usuń gospodarstwo"
+                ToolTip="Przejdź do potwierdzenia usunięcia gospodarstwa"
                 Click="Usun_Click"/>
     </Grid>
 </UserControl>

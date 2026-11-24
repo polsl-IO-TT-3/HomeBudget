@@ -43,28 +43,12 @@ namespace HomeBudget.Components
         {
             if (DataContext is not Gospodarstwo wybraneGospodarstwo) return;
 
-            if (!wybraneGospodarstwo.CzyChronione)
-            {
-                var wynik = MessageBox.Show(
-                    $"Czy na pewno chcesz usunąć gospodarstwo „{wybraneGospodarstwo.Nazwa}”?",
-                    "Potwierdź usunięcie",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
-
-                if (wynik == MessageBoxResult.Yes)
-                {
-                    BazaDanych.Gospodarstwa.Remove(wybraneGospodarstwo);
-                    BazaDanych.Zapisz();
-                }
-                return;
-            }
-
-            var oknoPotwierdzenia = new LogowanieWindow(wybraneGospodarstwo, "Potwierdź usunięcie", "Usuń")
+            var oknoUsuwania = new UsunGospodarstwoWindow(wybraneGospodarstwo)
             {
                 Owner = Window.GetWindow(this)
             };
 
-            if (oknoPotwierdzenia.ShowDialog() == true)
+            if (oknoUsuwania.ShowDialog() == true)
             {
                 BazaDanych.Gospodarstwa.Remove(wybraneGospodarstwo);
                 BazaDanych.Zapisz();
