@@ -25,9 +25,7 @@ namespace HomeBudget
             }
             else
             {
-                ErrorText.Text = "Nieprawidłowe hasło. Spróbuj ponownie.";
-                HasloBox.Clear();
-                HasloBox.Focus();
+                ErrorText.Text = "Nieprawidłowe hasło.";
             }
         }
     }

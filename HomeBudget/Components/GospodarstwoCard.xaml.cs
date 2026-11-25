@@ -15,12 +15,6 @@ namespace HomeBudget.Components
         {
             if (DataContext is not Gospodarstwo wybraneGospodarstwo) return;
 
-            if (!wybraneGospodarstwo.CzyChronione)
-            {
-                NavigationService.GetNavigationService(this)?.Navigate(new DashboardPage(wybraneGospodarstwo));
-                return;
-            }
-
             var oknoLogowania = new LogowanieWindow(wybraneGospodarstwo)
             {
                 Owner = Window.GetWindow(this)

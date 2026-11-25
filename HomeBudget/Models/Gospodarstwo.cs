@@ -56,12 +56,8 @@ namespace HomeBudget
             {
                 _hasloHash = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasloHash)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CzyChronione)));
             }
         }
-
-        [JsonIgnore]
-        public bool CzyChronione => !string.IsNullOrEmpty(HasloHash);
 
         public void UstawHaslo(string noweHaslo) => HasloHash = HasloHelper.Hash(noweHaslo);
 

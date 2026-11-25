@@ -13,7 +13,14 @@ namespace HomeBudget
             InitializeComponent();
             _viewModel = new DashboardViewModel(gospodarstwo, () =>
             {
-                NavigationService?.Navigate(new ListaGospodarstwPage());
+                if (NavigationService != null)
+                {
+                    NavigationService.Navigate(new ListaGospodarstwPage());
+                    while (NavigationService.CanGoBack)
+                    {
+                        NavigationService.RemoveBackEntry();
+                    }
+                }
             });
             DataContext = _viewModel;
 

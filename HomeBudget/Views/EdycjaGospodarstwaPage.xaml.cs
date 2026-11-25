@@ -13,9 +13,6 @@ namespace HomeBudget
             _gospodarstwo = gospodarstwo;
             NowaNazwaBox.Text = gospodarstwo.Nazwa;
 
-            // Jeśli gospodarstwo nie ma hasła, ukrywamy pole potwierdzenia obecnym hasłem
-            StareHasloPanel.Visibility = _gospodarstwo.CzyChronione ? Visibility.Visible : Visibility.Collapsed;
-
             Loaded += (s, e) =>
             {
                 var okno = Window.GetWindow(this);
@@ -27,10 +24,7 @@ namespace HomeBudget
 
         private void Cofnij_Click(object sender, RoutedEventArgs e)
         {
-            if (NavigationService != null && NavigationService.CanGoBack)
-            {
-                NavigationService.GoBack();
-            }
+            WrocDoListy();
         }
 
         private void Zapisz_Click(object sender, RoutedEventArgs e)
@@ -43,33 +37,41 @@ namespace HomeBudget
                 ErrorText.Text = "Nazwa gospodarstwa nie może być pusta.";
                 return;
             }
+
             if (BazaDanych.CzyNazwaIstnieje(nowaNazwa, _gospodarstwo))
             {
                 ErrorText.Text = "Gospodarstwo o takiej nazwie już istnieje.";
                 return;
             }
 
-            // Każda zmiana wymaga zatwierdzenia obecnym hasłem (jeśli gospodarstwo jest chronione)
-            if (_gospodarstwo.CzyChronione && !_gospodarstwo.SprawdzHaslo(StareHasloBox.Password))
+            if (!_gospodarstwo.SprawdzHaslo(StareHasloBox.Password))
             {
-                ErrorText.Text = "Wpisz poprawne obecne hasło, aby zatwierdzić zmiany.";
+                ErrorText.Text = "Nieprawidłowe obecne hasło.";
                 StareHasloBox.Clear();
                 StareHasloBox.Focus();
                 return;
             }
 
-            // Jeśli sekcja zmiany hasła została rozwinięta i wpisano nowe hasło
-            if (_gospodarstwo.CzyChronione && !_gospodarstwo.SprawdzHaslo(StareHasloBox.Password))
+            _gospodarstwo.Nazwa = nowaNazwa;
+
+            if (!string.IsNullOrEmpty(NoweHasloBox.Password))
             {
                 _gospodarstwo.UstawHaslo(NoweHasloBox.Password);
             }
 
-            _gospodarstwo.Nazwa = nowaNazwa;
             BazaDanych.Zapisz();
+            WrocDoListy();
+        }
 
-            if (NavigationService != null && NavigationService.CanGoBack)
+        private void WrocDoListy()
+        {
+            if (NavigationService != null)
             {
-                NavigationService.GoBack();
+                NavigationService.Navigate(new ListaGospodarstwPage());
+                while (NavigationService.CanGoBack)
+                {
+                    NavigationService.RemoveBackEntry();
+                }
             }
         }
     }

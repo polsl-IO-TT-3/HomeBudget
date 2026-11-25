@@ -12,29 +12,22 @@ namespace HomeBudget
             _gospodarstwo = gospodarstwo;
             OpisText.Text = $"Czy na pewno chcesz trwale usunąć „{gospodarstwo.Nazwa}”?";
 
-            if (_gospodarstwo.CzyChronione)
-            {
-                HasloPanel.Visibility = Visibility.Visible;
-                HasloBox.Focus();
-            }
-            else
-            {
-                HasloPanel.Visibility = Visibility.Collapsed;
-            }
+            HasloBox.Focus();
         }
 
         private void Usun_Click(object sender, RoutedEventArgs e)
         {
-            if (_gospodarstwo.CzyChronione && !_gospodarstwo.SprawdzHaslo(HasloBox.Password))
+            if (_gospodarstwo.SprawdzHaslo(HasloBox.Password))
+            {
+                DialogResult = true;
+                Close();
+            }
+            else
             {
                 ErrorText.Text = "Nieprawidłowe hasło. Gospodarstwo nie zostało usunięte.";
                 HasloBox.Clear();
                 HasloBox.Focus();
-                return;
             }
-
-            DialogResult = true;
-            Close();
         }
     }
 }
